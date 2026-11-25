@@ -36,19 +36,41 @@ function choose(position: { string: number; fret: number; midi: number }) {
   }
 }
 
-function play() {
-  const context = new AudioContext()
-  const oscillator = context.createOscillator()
-  const gain = context.createGain()
-  oscillator.frequency.value = midiHz(target.value)
-  oscillator.type = 'sine'
-  gain.gain.setValueAtTime(0.14, context.currentTime)
-  gain.gain.exponentialRampToValueAtTime(0.001, context.currentTime + 1)
-  oscillator.connect(gain)
-  gain.connect(context.destination)
-  oscillator.start()
-  oscillator.stop(context.currentTime + 1)
-  oscillator.onended = () => context.close()
+async function play() {
+  const AudioContextClass = window.AudioContext
+  if (!AudioContextClass) return
+
+  const context = new AudioContextClass()
+  if (context.state === 'suspended') await context.resume()
+
+  const now = context.currentTime
+  const duration = 1.25
+  const fundamental = midiHz(target.value)
+  const master = context.createGain()
+  master.gain.setValueAtTime(0.0001, now)
+  master.gain.linearRampToValueAtTime(0.22, now + 0.012)
+  master.gain.exponentialRampToValueAtTime(0.0001, now + duration)
+  master.connect(context.destination)
+
+  // Suma de armónicos con decaimiento: una cuerda pulsada suena más
+  // natural que un oscilador sinusoidal aislado.
+  for (let harmonic = 1; harmonic <= 9; harmonic++) {
+    const oscillator = context.createOscillator()
+    const partialGain = context.createGain()
+    const amplitude = 1 / Math.pow(harmonic, 1.35)
+    const partialDuration = duration / (1 + (harmonic - 1) * 0.22)
+
+    oscillator.type = 'sine'
+    oscillator.frequency.value = fundamental * harmonic
+    partialGain.gain.setValueAtTime(amplitude, now)
+    partialGain.gain.exponentialRampToValueAtTime(0.0001, now + partialDuration)
+    oscillator.connect(partialGain)
+    partialGain.connect(master)
+    oscillator.start(now)
+    oscillator.stop(now + duration)
+  }
+
+  window.setTimeout(() => void context.close(), (duration + 0.15) * 1000)
 }
 </script>
 
