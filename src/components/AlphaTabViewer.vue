@@ -63,7 +63,19 @@ async function loadScore() {
 
     const bytes = new Uint8Array(await props.file.arrayBuffer())
     if (disposed) return
-    const accepted = api.load(bytes)
+
+    // MusicXML plain text exposes its parts; load them all instead of only the first staff.
+    let trackIndexes: number[] | undefined
+    if (/\\.(xml|musicxml)$/i.test(props.file.name)) {
+      const xmlText = new TextDecoder().decode(bytes)
+      const xmlDocument = new DOMParser().parseFromString(xmlText, 'application/xml')
+      const partCount = xmlDocument.querySelectorAll('part-list > score-part').length
+      if (partCount > 1) {
+        trackIndexes = Array.from({ length: partCount }, (_, index) => index)
+      }
+    }
+
+    const accepted = api.load(bytes, trackIndexes)
     if (!accepted) throw new Error('AlphaTab no reconoció el contenido del archivo.')
   } catch (cause) {
     error.value = cause instanceof Error ? cause.message : 'No se pudo abrir la partitura.'
