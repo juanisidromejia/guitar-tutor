@@ -75,21 +75,21 @@ async function play() {
 </script>
 
 <template>
-  <section class="panel p-4 sm:p-5">
-    <div class="flex justify-between gap-3">
+  <section class="panel p-3 sm:p-4">
+    <div class="flex justify-between gap-2">
       <div>
         <p class="eyebrow">Reto de notas · Nivel 1</p>
-        <h2 class="mt-1 text-2xl font-black">Encuentra la nota</h2>
-        <p class="mt-1 text-sm text-[#788780]">Escucha y localiza la nota en el diapasón.</p>
+        <h2 class="mt-0.5 text-xl font-black">Encuentra la nota</h2>
+        <p class="mt-0.5 text-xs text-[#788780]">Escucha y localiza la nota en el diapasón.</p>
       </div>
-      <span class="rounded-full bg-[#eef4ef] px-3 py-1.5 text-xs font-bold text-[#426c5b]">Ronda {{ round }}</span>
+      <span class="rounded-full bg-[#eef4ef] px-2.5 py-1 text-[11px] font-bold text-[#426c5b]">Ronda {{ round }}</span>
     </div>
 
-    <div class="my-4 flex items-center justify-center gap-4 rounded-2xl bg-[#f5f8f4] p-3 sm:p-4">
+    <div class="my-2 flex items-center justify-center gap-3 rounded-xl bg-[#f5f8f4] p-2 sm:p-3">
       <div class="text-center">
-        <p class="text-xs font-bold uppercase text-[#718078]">Busca esta nota</p>
-        <p class="mt-1 text-3xl font-black text-[#176b5b]">{{ name.name }}</p>
-        <p class="text-sm text-[#75827b]">Octava {{ name.octave }}</p>
+        <p class="text-[10px] font-bold uppercase text-[#718078]">Busca esta nota</p>
+        <p class="mt-0.5 text-2xl font-black text-[#176b5b]">{{ name.name }}</p>
+        <p class="text-xs text-[#75827b]">Octava {{ name.octave }}</p>
       </div>
       <button class="secondary flex items-center gap-2" @click="play">
         <Volume2 :size="19" /> Escuchar
@@ -98,19 +98,19 @@ async function play() {
 
     <GuitarFretboard :selected="selected" :disabled="answered" @select="choose" />
 
-    <p class="mt-3 text-center text-sm text-[#788780]">
+    <p class="mt-2 text-center text-xs text-[#788780]">
       Toca directamente la cuerda y el traste que corresponden a la nota.
     </p>
 
-    <div v-if="selected && !correct" class="mt-4 flex items-center gap-3 rounded-xl bg-[#fff1e9] p-4 text-[#a14f2d]">
+    <div v-if="selected && !correct" class="mt-2 flex items-center gap-2 rounded-lg bg-[#fff1e9] p-2.5 text-[#a14f2d]">
       <XCircle />
       <p class="flex-1 text-sm font-semibold">Todavía no. Prueba otra posición.</p>
     </div>
-    <div v-if="correct" class="mt-4 flex items-center gap-3 rounded-xl bg-[#e9f5ed] p-4 text-[#226447]">
+    <div v-if="correct" class="mt-2 flex items-center gap-2 rounded-lg bg-[#e9f5ed] p-2.5 text-[#226447]">
       <CheckCircle2 />
       <div class="flex-1">
-        <p class="text-sm font-semibold">¡Muy bien! Has encontrado la nota.</p>
-        <p class="mt-1 text-xs">Cuando estés listo, continúa con el siguiente reto.</p>
+        <p class="text-xs font-semibold">¡Muy bien! Has encontrado la nota.</p>
+        <p class="mt-0.5 text-[11px]">Cuando estés listo, continúa con el siguiente reto.</p>
       </div>
       <button class="primary flex shrink-0 items-center gap-2" @click="next">
         Continuar <ArrowRight :size="17" />
