@@ -44,11 +44,11 @@ async function play() {
   if (context.state === 'suspended') await context.resume()
 
   const now = context.currentTime
-  const duration = 1.25
+  const duration = 2.4
   const fundamental = midiHz(target.value)
   const master = context.createGain()
   master.gain.setValueAtTime(0.0001, now)
-  master.gain.linearRampToValueAtTime(0.22, now + 0.012)
+  master.gain.linearRampToValueAtTime(0.18, now + 0.018)
   master.gain.exponentialRampToValueAtTime(0.0001, now + duration)
   master.connect(context.destination)
 
@@ -58,7 +58,7 @@ async function play() {
     const oscillator = context.createOscillator()
     const partialGain = context.createGain()
     const amplitude = 1 / Math.pow(harmonic, 1.35)
-    const partialDuration = duration / (1 + (harmonic - 1) * 0.22)
+    const partialDuration = duration / (1 + (harmonic - 1) * 0.14)
 
     oscillator.type = 'sine'
     oscillator.frequency.value = fundamental * harmonic
@@ -75,7 +75,7 @@ async function play() {
 </script>
 
 <template>
-  <section class="panel p-5 sm:p-7">
+  <section class="panel p-4 sm:p-5">
     <div class="flex justify-between gap-3">
       <div>
         <p class="eyebrow">Reto de notas · Nivel 1</p>
@@ -85,10 +85,10 @@ async function play() {
       <span class="rounded-full bg-[#eef4ef] px-3 py-1.5 text-xs font-bold text-[#426c5b]">Ronda {{ round }}</span>
     </div>
 
-    <div class="my-6 flex items-center justify-center gap-4 rounded-2xl bg-[#f5f8f4] p-5">
+    <div class="my-4 flex items-center justify-center gap-4 rounded-2xl bg-[#f5f8f4] p-3 sm:p-4">
       <div class="text-center">
         <p class="text-xs font-bold uppercase text-[#718078]">Busca esta nota</p>
-        <p class="mt-1 text-4xl font-black text-[#176b5b]">{{ name.name }}</p>
+        <p class="mt-1 text-3xl font-black text-[#176b5b]">{{ name.name }}</p>
         <p class="text-sm text-[#75827b]">Octava {{ name.octave }}</p>
       </div>
       <button class="secondary flex items-center gap-2" @click="play">
@@ -98,7 +98,7 @@ async function play() {
 
     <GuitarFretboard :selected="selected" :disabled="answered" @select="choose" />
 
-    <p class="mt-5 text-center text-sm text-[#788780]">
+    <p class="mt-3 text-center text-sm text-[#788780]">
       Toca directamente la cuerda y el traste que corresponden a la nota.
     </p>
 
