@@ -52,7 +52,8 @@ async function loadScore() {
         loadingScore.value = false
       }
     })
-    api.playbackFinished.on(() => {
+    // alphaTab names this event playerFinished (not playbackFinished).
+    api.playerFinished.on(() => {
       if (!disposed) isPlaying.value = false
     })
     api.soundFontLoad?.on((event: any) => {
