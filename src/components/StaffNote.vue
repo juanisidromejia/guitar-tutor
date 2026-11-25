@@ -15,8 +15,8 @@ const hasLedgerLine = computed(() => diatonicStep.value <= 28)
 </script>
 
 <template>
-  <div class="rounded-2xl bg-[#fbfaf6] p-2 sm:p-3">
-    <svg viewBox="0 0 310 180" class="mx-auto block w-full max-w-[300px]" role="img" aria-label="Nota en pentagrama con clave de sol">
+  <div class="rounded-2xl bg-[#fbfaf6] p-1.5 sm:p-2">
+    <svg viewBox="0 0 310 180" class="mx-auto block w-full max-w-[250px]" role="img" aria-label="Nota en pentagrama con clave de sol">
       <g stroke="#89958e" stroke-width="1.3">
         <path v-for="i in 5" :key="i" :d="'M 35 ' + (75 + (i - 1) * 18) + ' H 285'" />
       </g>
