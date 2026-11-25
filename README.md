@@ -1,16 +1,1 @@
-# Guitar Tutor
-
-Plataforma educativa para aprender guitarra relacionando el diapasón con la lectura musical.
-
-## Stack
-
-- Vue 3 + Composition API
-- Vite + TypeScript
-- Tailwind CSS
-- Vue Router
-- SVG para el diapasón interactivo
-- OpenSheetMusicDisplay para visualizar MusicXML
-
-## Estado
-
-Proyecto en fase inicial de desarrollo.
+# Guitar Tutor\nMVP educativo para aprender guitarra conectando el diapasón con la lectura musical.\n\n## Desarrollo\n\n`npm install`\n`npm run dev`\n\n## Build\n`npm run typecheck && npm run build`\n\n## Incluye\n- Navegación responsive y ruta de aprendizaje.\n- Diapasón SVG de seis cuerdas y cinco trastes, interactivo.\n- Cálculo MIDI con afinación estándar y nombres latinos.\n- Ejercicio de localización de notas y audio Web Audio.\n- Pentagrama de referencia y carga local de MusicXML/XML con OSMD bajo demanda.\n- Progreso local en localStorage.\n\nLa altura MIDI representa el sonido real. La notación convencional de guitarra se escribe una octava por encima del sonido.

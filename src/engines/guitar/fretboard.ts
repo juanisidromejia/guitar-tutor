@@ -1,0 +1,1 @@
+import{OPEN_MIDI}from'../music/pitch';export function fretMidi(string:number,fret:number){if(string<1||string>6||fret<0||fret>24)throw Error('Posición inválida');return OPEN_MIDI[6-string]+fret}

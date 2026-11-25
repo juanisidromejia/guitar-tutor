@@ -1,0 +1,1 @@
+export const OPEN_MIDI=[40,45,50,55,59,64] as const;const NAMES=['Do','Do♯','Re','Re♯','Mi','Fa','Fa♯','Sol','Sol♯','La','La♯','Si'];export function midiName(m:number){return{name:NAMES[((m%12)+12)%12],octave:Math.floor(m/12)-1}}export function midiHz(m:number){return 440*2**((m-69)/12)}
