@@ -32,8 +32,6 @@ function choose(position: { string: number; fret: number; midi: number }) {
   feedback.value = isCorrect ? 'correct' : 'wrong'
 
   if (isCorrect) {
-    // Programa el avance antes de actualizar el progreso para que la
-    // siguiente prueba no dependa de operaciones secundarias.
     if (advanceTimer) clearTimeout(advanceTimer)
     advanceTimer = setTimeout(next, 1300)
     complete(3)
@@ -47,57 +45,60 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="page">
-    <RouterLink to="/" class="mb-3 inline-flex items-center gap-2 text-sm font-bold text-[#698077]">
-      <ArrowLeft :size="17" /> Volver al inicio
+    <RouterLink to="/" class="mb-2 inline-flex items-center gap-2 text-xs font-bold text-[#698077]">
+      <ArrowLeft :size="15" /> Volver al inicio
     </RouterLink>
 
-    <div class="mb-4">
+    <div class="mb-3">
       <p class="eyebrow">Lectura musical · Nivel 1</p>
-      <h1 class="mt-1 text-2xl font-black">Notas en el pentagrama</h1>
-      <p class="mt-1 max-w-2xl text-sm leading-5 text-[#788780]">
+      <h1 class="mt-0.5 text-xl font-black">Notas en el pentagrama</h1>
+      <p class="mt-0.5 max-w-2xl text-xs leading-4 text-[#788780]">
         Lee la nota en clave de sol y encuentra su lugar en el diapasón de la guitarra.
       </p>
     </div>
 
-    <section class="panel p-4 sm:p-5">
-      <div class="flex items-center justify-between gap-3">
+    <section class="panel p-3 sm:p-4">
+      <div class="mb-2 flex items-center justify-between gap-3">
         <div>
           <p class="eyebrow">Lee y encuentra</p>
-          <h2 class="mt-1 text-xl font-black">¿Dónde está esta nota?</h2>
+          <h2 class="mt-0.5 text-lg font-black">¿Dónde está esta nota?</h2>
         </div>
-        <span class="rounded-full bg-[#eef4ef] px-3 py-1.5 text-xs font-bold text-[#426c5b]">Ejercicio {{ round }}</span>
+        <span class="rounded-full bg-[#eef4ef] px-2.5 py-1 text-[11px] font-bold text-[#426c5b]">Ejercicio {{ round }}</span>
       </div>
 
-      <div class="my-3 rounded-2xl bg-[#f5f8f4] p-2 sm:p-3">
-        <p class="mb-1 text-center text-xs font-bold uppercase tracking-wide text-[#718078]">Nota en clave de sol</p>
-        <StaffNote :midi="target" />
-        <p class="mt-1 text-center text-xs font-semibold text-[#176b5b]">
-          Busca la nota en el instrumento, no por su nombre.
-        </p>
+      <div class="grid grid-cols-1 items-center gap-3 lg:grid-cols-[minmax(230px,0.75fr)_minmax(0,1.5fr)] lg:gap-5">
+        <div class="rounded-xl bg-[#f5f8f4] p-2">
+          <p class="mb-0.5 text-center text-[10px] font-bold uppercase tracking-wide text-[#718078]">Nota en clave de sol</p>
+          <StaffNote :midi="target" />
+          <p class="mt-0.5 text-center text-[11px] font-semibold text-[#176b5b]">
+            Busca la nota en el instrumento.
+          </p>
+        </div>
+
+        <div class="min-w-0">
+          <div class="mb-1 flex items-center justify-between gap-2">
+            <h3 class="text-sm font-extrabold">Diapasón de guitarra</h3>
+            <span class="text-[10px] text-[#829087]">Cuerdas 1–6 · Trastes 0–5</span>
+          </div>
+          <GuitarFretboard :selected="selected" :disabled="feedback === 'correct'" @select="choose" />
+        </div>
       </div>
 
-      <div class="mb-2 flex items-center justify-between gap-3">
-        <h3 class="font-extrabold">Diapasón de guitarra</h3>
-        <span class="text-xs text-[#829087]">Cuerdas 1 a 6 · Trastes 0 a 5</span>
+      <div v-if="feedback === 'wrong'" class="mt-2 flex items-center gap-2 rounded-lg bg-[#fff1e9] p-2 text-[#a14f2d]">
+        <XCircle :size="18" />
+        <p class="text-xs font-semibold">Esa posición produce otra nota. ¡Inténtalo de nuevo!</p>
       </div>
-      <GuitarFretboard :selected="selected" :disabled="feedback === 'correct'" @select="choose" />
-
-      <div v-if="feedback === 'wrong'" class="mt-3 flex items-center gap-3 rounded-xl bg-[#fff1e9] p-3 text-[#a14f2d]">
-        <XCircle />
-        <p class="text-sm font-semibold">Esa posición produce otra nota. ¡Inténtalo de nuevo!</p>
+      <div v-else-if="feedback === 'correct'" class="mt-2 flex items-center gap-2 rounded-lg bg-[#e9f5ed] p-2 text-[#226447]">
+        <CheckCircle2 :size="18" />
+        <p class="text-xs font-semibold">¡Correcto! Has relacionado el pentagrama con la guitarra. Siguiente nota…</p>
       </div>
-      <div v-else-if="feedback === 'correct'" class="mt-3 flex items-center gap-3 rounded-xl bg-[#e9f5ed] p-3 text-[#226447]">
-        <CheckCircle2 />
-        <p class="text-sm font-semibold">¡Correcto! Has relacionado el pentagrama con la guitarra. Siguiente nota…</p>
-      </div>
-      <p v-else class="mt-3 text-center text-sm text-[#788780]">
+      <p v-else class="mt-2 text-center text-xs text-[#788780]">
         Selecciona una cuerda y un traste. La respuesta se comprueba automáticamente.
       </p>
     </section>
 
-    <div class="mt-3 rounded-2xl bg-[#edf4ee] p-3 text-xs leading-5 text-[#567267]">
-      <b>Consejo:</b> recuerda que la guitarra suena una octava más grave de lo que se escribe.
-      Por eso, la posición correcta del diapasón corresponde a una octava más grave que la nota escrita.
+    <div class="mt-2 rounded-xl bg-[#edf4ee] p-2.5 text-[11px] leading-4 text-[#567267]">
+      <b>Consejo:</b> la guitarra suena una octava más grave de lo que se escribe. La posición correcta corresponde a esa octava inferior.
     </div>
   </div>
 </template>
