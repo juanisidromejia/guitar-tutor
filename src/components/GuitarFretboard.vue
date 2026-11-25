@@ -113,8 +113,7 @@ const selectedLabel = computed(() => {
       </g>
 
       <g fill="#8d795f">
-        <circle cx="206" cy="129" r="4" />
-        <circle cx="430" cy="129" r="4" />
+        <circle cx="542" cy="129" r="4" />
       </g>
     </svg>
   </div>
