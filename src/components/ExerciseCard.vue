@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref } from 'vue'
-import { CheckCircle2, Volume2, XCircle } from 'lucide-vue-next'
+import { computed, ref } from 'vue'
+import { ArrowRight, CheckCircle2, Volume2, XCircle } from 'lucide-vue-next'
 import GuitarFretboard from './GuitarFretboard.vue'
 import { fretMidi } from '../engines/guitar/fretboard'
 import { midiName, midiHz } from '../engines/music/pitch'
@@ -13,12 +13,10 @@ const target = ref(52)
 const selected = ref<{ string: number; fret: number } | null>(null)
 const answered = ref(false)
 const correct = ref(false)
-let advanceTimer: ReturnType<typeof setTimeout> | undefined
 
 const name = computed(() => midiName(target.value))
 
 function next() {
-  if (advanceTimer) clearTimeout(advanceTimer)
   round.value++
   target.value = pool[(round.value * 7 + 3) % pool.length]
   selected.value = null
@@ -35,7 +33,6 @@ function choose(position: { string: number; fret: number; midi: number }) {
   if (correct.value) {
     answered.value = true
     complete(1)
-    advanceTimer = setTimeout(next, 1100)
   }
 }
 
@@ -53,10 +50,6 @@ function play() {
   oscillator.stop(context.currentTime + 1)
   oscillator.onended = () => context.close()
 }
-
-onBeforeUnmount(() => {
-  if (advanceTimer) clearTimeout(advanceTimer)
-})
 </script>
 
 <template>
@@ -93,7 +86,13 @@ onBeforeUnmount(() => {
     </div>
     <div v-if="correct" class="mt-4 flex items-center gap-3 rounded-xl bg-[#e9f5ed] p-4 text-[#226447]">
       <CheckCircle2 />
-      <p class="text-sm font-semibold">¡Muy bien! Nota encontrada. Vamos con la siguiente…</p>
+      <div class="flex-1">
+        <p class="text-sm font-semibold">¡Muy bien! Has encontrado la nota.</p>
+        <p class="mt-1 text-xs">Cuando estés listo, continúa con el siguiente reto.</p>
+      </div>
+      <button class="primary flex shrink-0 items-center gap-2" @click="next">
+        Continuar <ArrowRight :size="17" />
+      </button>
     </div>
   </section>
 </template>
