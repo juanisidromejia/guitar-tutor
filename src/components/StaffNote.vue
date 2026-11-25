@@ -20,7 +20,7 @@ const hasLedgerLine = computed(() => diatonicStep.value <= 28)
       <g stroke="#89958e" stroke-width="1.3">
         <path v-for="i in 5" :key="i" :d="'M 35 ' + (75 + (i - 1) * 18) + ' H 285'" />
       </g>
-      <text x="48" y="140" font-size="70" fill="#176b5b" text-anchor="middle">𝄞</text>
+      <text x="47" y="139" font-size="70" fill="#176b5b">𝄞</text>
       <path v-if="hasLedgerLine" :d="'M 150 ' + y + ' h 44'" stroke="#68766f" stroke-width="1.4" />
       <text v-if="isSharp" x="145" :y="y + 5" font-size="22" text-anchor="middle" fill="#176b5b">♯</text>
       <ellipse cx="172" :cy="y" rx="9" ry="6.5" fill="#176b5b" :transform="'rotate(-18 172 ' + y + ')'" />

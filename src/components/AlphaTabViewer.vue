@@ -53,7 +53,10 @@ async function loadScore() {
       if (!disposed) playerReady.value = true
     })
     api.scoreLoaded.on((score: any) => {
-      if (!disposed) scoreTitle.value = score.title || props.file.name
+      if (!disposed) {
+        scoreTitle.value = score.title || props.file.name
+        loadingScore.value = false
+      }
     })
     api.playbackFinished.on(() => {
       if (!disposed) isPlaying.value = false
