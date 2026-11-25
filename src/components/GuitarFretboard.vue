@@ -21,7 +21,7 @@ const emit = defineEmits<{
   (event: 'select', position: FretPosition): void
 }>()
 
-const strings = [6, 5, 4, 3, 2, 1]
+const strings = [1, 2, 3, 4, 5, 6]
 const frets = [0, 1, 2, 3, 4, 5]
 
 const stringY = (index: number) => 35 + index * 35
