@@ -1,20 +1,18 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref } from 'vue'
+import { onBeforeUnmount, ref } from 'vue'
 import { ArrowLeft, CheckCircle2, XCircle } from 'lucide-vue-next'
 import { RouterLink } from 'vue-router'
 import GuitarFretboard from '../components/GuitarFretboard.vue'
 import StaffNote from '../components/StaffNote.vue'
 import { fretMidi } from '../engines/guitar/fretboard'
-import { midiName } from '../engines/music/pitch'
 import { useProgress } from '../composables/useProgress'
 
 const { record, complete } = useProgress()
 const notes = [60, 62, 64, 65, 67, 69]
 const round = ref(1)
-const target = ref(52)
+const target = ref(64)
 const selected = ref<{ string: number; fret: number } | null>(null)
 const feedback = ref<'correct' | 'wrong' | null>(null)
-const noteName = computed(() => midiName(target.value))
 let advanceTimer: ReturnType<typeof setTimeout> | undefined
 
 function next() {
