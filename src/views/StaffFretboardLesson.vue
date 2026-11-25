@@ -32,8 +32,11 @@ function choose(position: { string: number; fret: number; midi: number }) {
   feedback.value = isCorrect ? 'correct' : 'wrong'
 
   if (isCorrect) {
-    complete(3)
+    // Programa el avance antes de actualizar el progreso para que la
+    // siguiente prueba no dependa de operaciones secundarias.
+    if (advanceTimer) clearTimeout(advanceTimer)
     advanceTimer = setTimeout(next, 1300)
+    complete(3)
   }
 }
 
