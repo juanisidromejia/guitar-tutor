@@ -26,7 +26,8 @@ function next() {
 function choose(position: { string: number; fret: number; midi: number }) {
   if (feedback.value === 'correct') return
   selected.value = position
-  const isCorrect = fretMidi(position.string, position.fret) === target.value
+  const soundingMidi = target.value - 12
+  const isCorrect = fretMidi(position.string, position.fret) === soundingMidi
   record(isCorrect)
   feedback.value = isCorrect ? 'correct' : 'wrong'
 
@@ -93,7 +94,7 @@ onBeforeUnmount(() => {
 
     <div class="mt-5 rounded-2xl bg-[#edf4ee] p-4 text-sm leading-6 text-[#567267]">
       <b>Consejo:</b> recuerda que la guitarra suena una octava más grave de lo que se escribe.
-      En esta actividad, la posición del diapasón se compara con la altura real de la nota.
+      Por eso, la posición correcta del diapasón corresponde a una octava más grave que la nota escrita.
     </div>
   </div>
 </template>
