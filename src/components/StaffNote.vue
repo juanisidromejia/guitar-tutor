@@ -23,7 +23,7 @@ const hasLedgerLine = computed(() => diatonicStep.value <= 28)
       <text x="42" y="137" font-size="70" fill="#176b5b">𝄞</text>
       <path v-if="hasLedgerLine" :d="'M 150 ' + y + ' h 44'" stroke="#68766f" stroke-width="1.4" />
       <text v-if="isSharp" x="145" :y="y + 5" font-size="22" text-anchor="middle" fill="#176b5b">♯</text>
-      <ellipse cx="172" :cy="y" rx="9" ry="6.5" fill="#176b5b" transform="rotate(-18 172 150)" />
+      <ellipse cx="172" :cy="y" rx="9" ry="6.5" fill="#176b5b" :transform="'rotate(-18 172 ' + y + ')'" />
       <path :d="'M 180 ' + y + ' v -43'" stroke="#176b5b" stroke-width="2" />
     </svg>
     <p class="text-center text-xs font-semibold text-[#718078]">Clave de sol · pentagrama</p>
