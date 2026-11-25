@@ -53,7 +53,7 @@ const selectedLabel = computed(() => {
   <div class="w-full overflow-x-auto">
     <svg
       viewBox="0 0 650 250"
-      class="mx-auto block w-full min-w-[310px] max-w-[780px]"
+      class="mx-auto block w-full min-w-[310px] max-w-[620px]"
       role="img"
       aria-label="Diapasón interactivo de guitarra"
     >
