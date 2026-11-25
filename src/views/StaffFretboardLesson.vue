@@ -9,7 +9,7 @@ import { midiName } from '../engines/music/pitch'
 import { useProgress } from '../composables/useProgress'
 
 const { record, complete } = useProgress()
-const notes = [40, 42, 43, 45, 47, 48, 50, 52, 53, 55, 57, 59, 60, 62, 64, 65, 67, 69]
+const notes = [60, 62, 64, 65, 67, 69]
 const round = ref(1)
 const target = ref(52)
 const selected = ref<{ string: number; fret: number } | null>(null)
