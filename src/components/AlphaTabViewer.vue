@@ -34,12 +34,6 @@ async function loadScore() {
     const settings = {
       core: {
         fontDirectory: `${import.meta.env.BASE_URL}font/`,
-        useWorkers: true,
-      },
-      display: {
-        layoutMode: alphaTab.LayoutMode.Page,
-        scale: 1,
-        staveProfile: alphaTab.StaveProfile.Default,
       },
       player: {
         enablePlayer: true,
