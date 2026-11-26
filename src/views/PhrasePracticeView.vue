@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { ArrowLeft, ArrowRight, CheckCircle2, Volume2, XCircle } from 'lucide-vue-next'
-import { RouterLink } from 'vue-router'
+import { ArrowRight, CheckCircle2, Volume2, XCircle } from 'lucide-vue-next'
 import GuitarFretboard from '../components/GuitarFretboard.vue'
 import StaffNote from '../components/StaffNote.vue'
 import { fretMidi } from '../engines/guitar/fretboard'
@@ -51,9 +50,6 @@ function restart() {
 
 <template>
   <div class="page">
-    <RouterLink to="/" class="mb-3 inline-flex items-center gap-2 text-xs font-bold text-[#698077]">
-      <ArrowLeft :size="15" /> Volver al inicio
-    </RouterLink>
     <header class="mb-4">
       <p class="eyebrow">Lectura e interpretación · Nivel 1</p>
       <h1 class="mt-1 text-2xl font-black">Del papel a la guitarra</h1>
