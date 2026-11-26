@@ -10,6 +10,8 @@ import OpenStrings from './views/OpenStringsLesson.vue'
 import PhrasePractice from './views/PhrasePracticeView.vue'
 import RhythmReading from './views/RhythmReadingView.vue'
 import Assessment from './views/AssessmentView.vue'
+import Sessions from './views/SessionsView.vue'
+import JoinSession from './views/JoinSessionView.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -22,6 +24,9 @@ const router = createRouter({
     { path: '/lectura-ritmica', component: RhythmReading },
     { path: '/evaluacion', component: Assessment },
     { path: '/del-papel-a-la-guitarra', component: PhrasePractice },
+    { path: '/docente/sesiones', component: Sessions },
+    { path: '/unirse', component: JoinSession },
+    { path: '/sesion/:code', component: JoinSession },
     { path: '/:pathMatch(.*)*', redirect: '/' },
   ],
   scrollBehavior: () => ({ top: 0 }),

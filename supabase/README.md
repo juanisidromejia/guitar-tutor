@@ -1,0 +1,34 @@
+# Configuración de sesiones de clase
+
+## 1. Crear el proyecto Supabase
+Crea un proyecto en Supabase. En Authentication:
+- Activa **Anonymous sign-ins** para estudiantes.
+- Activa el proveedor **Email** para docentes.
+- En URL Configuration agrega la URL pública de Guitar Tutor y la URL local de desarrollo como Redirect URLs.
+
+## 2. Aplicar las migraciones
+Abre SQL Editor y ejecuta, en orden, todos los archivos de `supabase/migrations/`:
+1. `202611260001_class_sessions.sql`
+2. `202611260002_api_grants.sql`
+
+Las migraciones crean las sesiones, preguntas, participantes y respuestas; activan RLS y publican las tablas necesarias en Realtime. El campo `correct_answer` no tiene permiso de lectura desde el navegador. La corrección y puntuación se calculan en una función del servidor.
+
+## 3. Variables de entorno
+Copia `.env.example` como `.env.local` y completa:
+- `VITE_SUPABASE_URL`: Project URL.
+- `VITE_SUPABASE_ANON_KEY`: publishable key (o anon key legacy).
+
+Nunca coloques `service_role` ni una secret key en variables `VITE_*` o en el navegador.
+
+## 4. Vercel
+En Project Settings → Environment Variables agrega las dos variables anteriores para Preview y Production. Después vuelve a desplegar `feature/phase-1-foundation`.
+
+## 5. Flujo disponible
+- El docente entra con enlace mágico enviado por correo.
+- El estudiante entra desde un enlace directo o escribe el código manualmente; luego elige un nickname, sin crear una cuenta.
+- **A su ritmo:** el docente abre la prueba y cada estudiante responde de forma independiente.
+- **En vivo:** el docente inicia la sesión y avanza las preguntas para todos; el estado se sincroniza en tiempo real.
+- El panel docente muestra participantes, puntuación y cantidad de respuestas correctas e incorrectas.
+
+## Alcance de esta primera versión
+Se usa el banco inicial fijo de 12 preguntas de Guitar Tutor. Todavía no hay editor para crear cuestionarios propios, temporizador/bonus por velocidad, equipos, exportación CSV, control de asistencia institucional ni presencia en línea diferenciada de participantes registrados. La lista del panel refleja participantes que ingresaron, no garantiza que sigan conectados en ese instante.

@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@coderline/alphatab": "1.8.4",
+    "@supabase/supabase-js": "^2.57.0",
     "lucide-vue-next": "^0.468.0",
     "vue": "^3.5.13",
     "vue-router": "^4.5.0"
@@ -24,7 +25,5 @@
     "vite": "^7.0.0",
     "vue-tsc": "^2.2.0"
   },
-  "engines": {
-    "node": ">=20.19.0"
-  }
+  "engines": { "node": ">=20.19.0" }
 }
