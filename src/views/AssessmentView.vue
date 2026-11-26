@@ -3,7 +3,6 @@ import { computed, ref } from 'vue'
 import { ArrowLeft, CheckCircle2, ClipboardCheck, RotateCcw, Trophy } from 'lucide-vue-next'
 import { RouterLink } from 'vue-router'
 import StaffNote from '../components/StaffNote.vue'
-import { midiName } from '../engines/music/pitch'
 
 type Category = 'Pentagrama' | 'Diapasón' | 'Ritmo'
 type Question = {
