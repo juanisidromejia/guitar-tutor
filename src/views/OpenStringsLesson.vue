@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import { ArrowLeft, CheckCircle2, Music2, Volume2 } from 'lucide-vue-next'
+import { computed, onUnmounted, ref } from 'vue'
+import { ArrowLeft, CheckCircle2, Volume2 } from 'lucide-vue-next'
 import { RouterLink } from 'vue-router'
 import StaffNote from '../components/StaffNote.vue'
 import { midiHz, midiName } from '../engines/music/pitch'
@@ -20,38 +20,74 @@ const visited = ref<number[]>([])
 const note = computed(() => midiName(selected.value.midi))
 const writtenNote = computed(() => midiName(selected.value.midi + 12))
 
+let audioContext: AudioContext | null = null
+
 function selectString(string: typeof strings[number]) {
   selected.value = string
   if (!visited.value.includes(string.number)) visited.value.push(string.number)
   if (visited.value.length === strings.length) complete(1)
 }
 
+// Síntesis por cuerda pulsada (Karplus–Strong): una excitación breve de ruido
+// recircula por una línea de retardo filtrada, produciendo armónicos y decaimiento.
+function createPluckedStringBuffer(context: AudioContext, frequency: number, stringNumber: number) {
+  const duration = 1.5
+  const sampleRate = context.sampleRate
+  const frameCount = Math.floor(sampleRate * duration)
+  const buffer = context.createBuffer(1, frameCount, sampleRate)
+  const samples = buffer.getChannelData(0)
+  const delayLength = Math.max(2, Math.round(sampleRate / frequency))
+  const delay = new Float32Array(delayLength)
+
+  for (let i = 0; i < delayLength; i++) {
+    delay[i] = Math.random() * 2 - 1
+  }
+
+  let index = 0
+  const damping = 0.9964 + (stringNumber - 1) * 0.00012
+
+  for (let i = 0; i < frameCount; i++) {
+    const next = (index + 1) % delayLength
+    const filtered = (delay[index] + delay[next]) * 0.5 * damping
+    delay[index] = filtered
+    samples[i] = filtered
+    index = next
+  }
+
+  return buffer
+}
+
 async function play() {
   const AudioContextClass = window.AudioContext
   if (!AudioContextClass) return
-  const context = new AudioContextClass()
-  if (context.state === 'suspended') await context.resume()
+
+  audioContext ??= new AudioContextClass()
+  if (audioContext.state === 'suspended') await audioContext.resume()
+
+  const context = audioContext
   const now = context.currentTime
-  const duration = 2.1
-  const master = context.createGain()
-  master.gain.setValueAtTime(0.0001, now)
-  master.gain.linearRampToValueAtTime(0.16, now + 0.02)
-  master.gain.exponentialRampToValueAtTime(0.0001, now + duration)
-  master.connect(context.destination)
-  for (let harmonic = 1; harmonic <= 8; harmonic++) {
-    const oscillator = context.createOscillator()
-    const gain = context.createGain()
-    oscillator.type = 'sine'
-    oscillator.frequency.value = midiHz(selected.value.midi) * harmonic
-    gain.gain.setValueAtTime(1 / Math.pow(harmonic, 1.4), now)
-    gain.gain.exponentialRampToValueAtTime(0.0001, now + duration / (1 + harmonic * 0.12))
-    oscillator.connect(gain)
-    gain.connect(master)
-    oscillator.start(now)
-    oscillator.stop(now + duration)
-  }
-  window.setTimeout(() => void context.close(), (duration + 0.2) * 1000)
+  const duration = 1.5
+  const source = context.createBufferSource()
+  const envelope = context.createGain()
+
+  source.buffer = createPluckedStringBuffer(context, midiHz(selected.value.midi), selected.value.number)
+  envelope.gain.setValueAtTime(0.0001, now)
+  envelope.gain.linearRampToValueAtTime(0.2, now + 0.006)
+  envelope.gain.setValueAtTime(0.16, now + 0.035)
+  envelope.gain.exponentialRampToValueAtTime(0.0001, now + duration)
+
+  source.connect(envelope)
+  envelope.connect(context.destination)
+  source.start(now)
+  source.stop(now + duration)
 }
+
+onUnmounted(() => {
+  if (audioContext) {
+    void audioContext.close()
+    audioContext = null
+  }
+})
 </script>
 
 <template>
