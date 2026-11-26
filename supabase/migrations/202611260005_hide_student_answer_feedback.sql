@@ -64,6 +64,7 @@ grant execute on function public.submit_class_answer(uuid,uuid,text) to authenti
 
 -- Students must not be able to inspect their own correctness rows through REST.
 drop policy if exists "answers visible to owner and self" on public.session_answers;
+drop policy if exists "answers visible to owner only" on public.session_answers;
 create policy "answers visible to owner only"
 on public.session_answers for select to authenticated
 using (public.is_class_owner(session_id));
