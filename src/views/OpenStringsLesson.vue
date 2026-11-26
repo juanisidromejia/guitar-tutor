@@ -30,6 +30,22 @@ function selectString(string: typeof strings[number]) {
 
 // Síntesis de cuerda pulsada (Karplus–Strong), con transitorio de púa
 // y resonancias suaves que evocan el cuerpo de una guitarra acústica.
+function createRoomImpulse(context: AudioContext, duration = 0.72) {
+  const sampleRate = context.sampleRate
+  const frameCount = Math.floor(sampleRate * duration)
+  const impulse = context.createBuffer(2, frameCount, sampleRate)
+
+  for (let channel = 0; channel < impulse.numberOfChannels; channel++) {
+    const samples = impulse.getChannelData(channel)
+    for (let i = 0; i < frameCount; i++) {
+      const decay = Math.pow(1 - i / frameCount, 2.8)
+      samples[i] = (Math.random() * 2 - 1) * decay
+    }
+  }
+
+  return impulse
+}
+
 function createPluckedStringBuffer(context: AudioContext, frequency: number, stringNumber: number) {
   const duration = 1.8
   const sampleRate = context.sampleRate
@@ -74,6 +90,10 @@ async function play() {
   const source = context.createBufferSource()
   const bodyFilter = context.createBiquadFilter()
   const toneFilter = context.createBiquadFilter()
+  const lowShelf = context.createBiquadFilter()
+  const convolver = context.createConvolver()
+  const dryGain = context.createGain()
+  const wetGain = context.createGain()
   const envelope = context.createGain()
 
   source.buffer = createPluckedStringBuffer(context, frequency, selected.value.number)
@@ -84,15 +104,26 @@ async function play() {
   bodyFilter.frequency.value = selected.value.number >= 4 ? 185 : 230
   bodyFilter.Q.value = 0.9
   bodyFilter.gain.value = 2.2
+  lowShelf.type = 'lowshelf'
+  lowShelf.frequency.value = 155
+  lowShelf.gain.value = 2.8
+  convolver.buffer = createRoomImpulse(context)
+  dryGain.gain.value = 0.9
+  wetGain.gain.value = 0.18
   envelope.gain.setValueAtTime(0.0001, now)
   envelope.gain.linearRampToValueAtTime(0.24, now + 0.008)
   envelope.gain.setValueAtTime(0.19, now + 0.045)
   envelope.gain.exponentialRampToValueAtTime(0.0001, now + duration)
 
   source.connect(toneFilter)
-  toneFilter.connect(bodyFilter)
+  toneFilter.connect(lowShelf)
+  lowShelf.connect(bodyFilter)
   bodyFilter.connect(envelope)
-  envelope.connect(context.destination)
+  envelope.connect(dryGain)
+  dryGain.connect(context.destination)
+  envelope.connect(convolver)
+  convolver.connect(wetGain)
+  wetGain.connect(context.destination)
   source.start(now)
   source.stop(now + duration)
 
@@ -168,7 +199,9 @@ onUnmounted(() => {
               <span v-if="selected.number === string.number" class="absolute left-1/2 h-5 w-5 -translate-x-1/2 rounded-full border-2 border-white bg-[#176b5b] shadow"></span>
             </span>
             <span class="w-12 text-right text-sm font-extrabold text-[#456653]">{{ string.name }}</span>
-            <CheckCircle2 v-if="visited.includes(string.number)" :size="16" class="text-[#4c9c7c]" />
+            <span class="grid h-4 w-4 shrink-0 place-items-center">
+              <CheckCircle2 v-if="visited.includes(string.number)" :size="16" class="text-[#4c9c7c]" />
+            </span>
           </button>
         </div>
         <p class="mt-3 text-center text-[10px] text-[#8b806f]">Vista orientativa: primera cuerda arriba, sexta cuerda abajo</p>
