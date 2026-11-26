@@ -94,7 +94,7 @@ function choose(position: { string: number; fret: number; midi: number }) {
     </section>
 
     <div class="mt-2 rounded-xl bg-[#edf4ee] p-2.5 text-[11px] leading-4 text-[#567267]">
-      <b>Consejo:</b> la guitarra suena una octava más grave de lo que se escribe. La posición correcta corresponde a esa octava inferior.
+      <b>Consejo:</b> la nota del pentagrama es la nota escrita. Para encontrarla en la guitarra, busca el sonido una octava más grave. Por ejemplo, un Sol4 escrito corresponde al Sol3 que suena en la tercera cuerda al aire.
     </div>
   </div>
 </template>
