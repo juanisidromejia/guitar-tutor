@@ -51,7 +51,7 @@ begin
  if p_mode not in ('self_paced','live') then raise exception 'Modalidad no válida.'; end if;
  if char_length(trim(p_title))<1 or char_length(trim(p_title))>90 then raise exception 'El nombre debe tener entre 1 y 90 caracteres.'; end if;
  loop
-  v_code:=upper(substr(encode(gen_random_bytes(5),'hex'),1,6));
+  v_code:=upper(substr(replace(pg_catalog.gen_random_uuid()::text,'-',''),1,6));
   exit when not exists(select 1 from public.sessions where code=v_code);
  end loop;
  insert into public.sessions(owner_id,code,title,mode)
