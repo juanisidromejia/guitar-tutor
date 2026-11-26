@@ -9,6 +9,7 @@ import StaffPractice from './views/StaffFretboardLesson.vue'
 import OpenStrings from './views/OpenStringsLesson.vue'
 import PhrasePractice from './views/PhrasePracticeView.vue'
 import RhythmReading from './views/RhythmReadingView.vue'
+import Assessment from './views/AssessmentView.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -19,6 +20,7 @@ const router = createRouter({
     { path: '/partitura', component: Scores },
     { path: '/notas-pentagrama', component: StaffPractice },
     { path: '/lectura-ritmica', component: RhythmReading },
+    { path: '/evaluacion', component: Assessment },
     { path: '/del-papel-a-la-guitarra', component: PhrasePractice },
     { path: '/:pathMatch(.*)*', redirect: '/' },
   ],
