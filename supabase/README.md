@@ -33,3 +33,6 @@ En Project Settings → Environment Variables agrega las dos variables anteriore
 
 ## Alcance de esta primera versión
 Se usa el banco inicial fijo de 12 preguntas de Guitar Tutor. Todavía no hay editor para crear cuestionarios propios, temporizador/bonus por velocidad, equipos, exportación CSV, control de asistencia institucional ni presencia en línea diferenciada de participantes registrados. La lista del panel refleja participantes que ingresaron, no garantiza que sigan conectados en ese instante.
+
+## Nota sobre la evaluación individual existente
+La ruta `/evaluacion` que ya tenía Guitar Tutor continúa siendo una prueba local del navegador. Su banco de respuestas forma parte del código del cliente y no debe usarse como examen supervisado o de alto impacto. Las sesiones nuevas califican en el servidor y no exponen la columna `correct_answer` en las consultas de estudiantes.
