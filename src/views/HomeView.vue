@@ -55,7 +55,6 @@ const modules = [
             <p class="mt-1 text-sm leading-5 text-[#7b8981]">{{module.description}}</p>
             <span class="mt-3 inline-block text-[10px] font-bold uppercase tracking-wider text-[#5b8b73]">{{module.tag}}</span>
           </div>
-          <ArrowRight class="self-center shrink-0 text-[#4a8068] transition-transform group-hover:translate-x-1" :size="20" />
         </RouterLink>
       </div>
     </section>
