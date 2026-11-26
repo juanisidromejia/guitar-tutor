@@ -11,6 +11,7 @@ Abre SQL Editor y ejecuta, en orden, todos los archivos de `supabase/migrations/
 1. `202611260001_class_sessions.sql`
 2. `202611260002_api_grants.sql`
 3. `202611260003_server_question_bank.sql`
+4. `202611260004_teacher_email_allowlist.sql`
 
 Las migraciones crean las sesiones, preguntas, participantes y respuestas; activan RLS y publican las tablas necesarias en Realtime. El campo `correct_answer` no tiene permiso de lectura desde el navegador. La corrección y puntuación se calculan en una función del servidor.
 
@@ -24,7 +25,10 @@ Nunca coloques `service_role` ni una secret key en variables `VITE_*` o en el na
 ## 4. Vercel
 En Project Settings → Environment Variables agrega las dos variables anteriores para Preview y Production. Después vuelve a desplegar `feature/phase-1-foundation`.
 
-## 5. Flujo disponible
+## 5. Acceso docente restringido (fase inicial)
+El panel docente está limitado a `juanisidromejia@gmail.com`. La interfaz solo permite solicitar el enlace mágico para ese correo y no crea usuarios nuevos desde el formulario. Además, la migración `202611260004_teacher_email_allowlist.sql` aplica la misma restricción en las funciones y políticas de la base de datos. Ejecuta esa migración después de las tres anteriores antes de utilizar el panel. Para autorizar otros docentes más adelante, habrá que ampliar la lista de permitidos y revisar el mecanismo de invitación.
+
+## 6. Flujo disponible
 - El docente entra con enlace mágico enviado por correo.
 - El estudiante entra desde un enlace directo o escribe el código manualmente; luego elige un nickname, sin crear una cuenta.
 - **A su ritmo:** el docente abre la prueba y cada estudiante responde de forma independiente.
