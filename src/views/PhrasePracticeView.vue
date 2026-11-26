@@ -97,7 +97,7 @@ async function play() {
       <div class="mb-3 grid grid-cols-4 gap-2">
         <div v-for="(midi, i) in phrase" :key="midi" class="rounded-lg p-2 text-center" :class="i < index || finished ? 'bg-[#e9f5ed] text-[#226447]' : i === index ? 'bg-[#dcebe0] text-[#176b5b] ring-1 ring-[#7ca68d]' : 'bg-[#f3f5f1] text-[#829087]'">
           <CheckCircle2 v-if="i < index || finished" :size="15" class="mx-auto mb-1" />
-          <StaffNote v-else :midi="midi" />
+          <span class="mx-auto mb-1 block h-3.5 w-3.5 rounded-full bg-current opacity-50"></span>
           <p class="text-xs font-extrabold">{{ labels[i] }}</p>
         </div>
       </div>
