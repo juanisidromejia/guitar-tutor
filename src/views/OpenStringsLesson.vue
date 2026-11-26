@@ -98,7 +98,7 @@ function selectString(string: typeof strings[number]) {
     <div class="mt-3 grid gap-2 sm:grid-cols-2">
       <div class="rounded-xl bg-[#edf4ee] p-3 text-xs leading-5 text-[#567267]">
         <b>¿Por qué hay dos cuerdas Mi?</b>
-        La sexta y la primera tienen el mismo nombre, pero la primera suena dos octavas más aguda.
+        La sexta y la primera tienen el mismo nombre, pero la primera suena dos octavas más aguda. Por ejemplo, la primera cuerda al aire suena Mi4 y se escribe Mi5 en el pentagrama de guitarra.
       </div>
       <div class="rounded-xl bg-[#edf4ee] p-3 text-xs leading-5 text-[#567267]">
         <b>¿Qué ocurre al pisar un traste?</b>
