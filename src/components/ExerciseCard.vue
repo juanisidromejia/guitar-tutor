@@ -32,7 +32,7 @@ function choose(position: { string: number; fret: number; midi: number }) {
 
   if (correct.value) {
     answered.value = true
-    complete(1)
+    complete(2)
   }
 }
 
