@@ -39,7 +39,7 @@ const ledgerLines = computed(() => {
       <path
         v-for="lineY in ledgerLines"
         :key="lineY"
-        :d="'M 150 ' + lineY + ' h 44"
+        :d="'M 150 ' + lineY + ' h 44'"
         stroke="#68766f"
         stroke-width="1.4"
       />
