@@ -33,18 +33,20 @@ const questions: Question[] = [
 const started = ref(false)
 const finished = ref(false)
 const index = ref(0)
+const questionOrder = ref<Question[]>([])
 const selected = ref('')
 const answers = ref<Record<number, string>>({})
-const current = computed(() => questions[index.value])
-const correctCount = computed(() => questions.filter(q => answers.value[q.id] === q.correct).length)
+const current = computed(() => questionOrder.value[index.value])
+const correctCount = computed(() => questionOrder.value.filter(q => answers.value[q.id] === q.correct).length)
 const percentage = computed(() => Math.round((correctCount.value / questions.length) * 100))
 const categoryResults = computed(() => (['Pentagrama', 'Diapasón', 'Ritmo'] as Category[]).map(category => {
-  const group = questions.filter(q => q.category === category)
+  const group = questionOrder.value.filter(q => q.category === category)
   return { category, correct: group.filter(q => answers.value[q.id] === q.correct).length, total: group.length }
 }))
 const answered = computed(() => Object.keys(answers.value).length)
 
 function begin() {
+  questionOrder.value = [...questions].sort(() => Math.random() - 0.5)
   started.value = true
   finished.value = false
   index.value = 0
@@ -132,7 +134,7 @@ function restart() {
       <div class="panel p-5 sm:p-6">
         <h3 class="text-lg font-black">Revisión de respuestas</h3>
         <div class="mt-4 space-y-3">
-          <article v-for="(question, i) in questions" :key="question.id" class="rounded-xl border p-4" :class="answers[question.id] === question.correct ? 'border-[#dcebe0]' : 'border-[#f0dfd8]'">
+          <article v-for="(question, i) in questionOrder" :key="question.id" class="rounded-xl border p-4" :class="answers[question.id] === question.correct ? 'border-[#dcebe0]' : 'border-[#f0dfd8]'">
             <div class="flex items-start gap-2">
               <CheckCircle2 v-if="answers[question.id] === question.correct" class="mt-0.5 shrink-0 text-[#398568]" :size="18"/>
               <span v-else class="mt-0.5 shrink-0 font-black text-[#b66b50]">×</span>
