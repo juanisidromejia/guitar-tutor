@@ -61,3 +61,12 @@ $$;
 -- Preserve the existing authenticated execution grant while preventing public execution.
 revoke all on function public.submit_class_answer(uuid,uuid,text) from public, anon;
 grant execute on function public.submit_class_answer(uuid,uuid,text) to authenticated;
+
+-- Students must not be able to inspect their own correctness rows through REST.
+drop policy if exists "answers visible to owner and self" on public.session_answers;
+create policy "answers visible to owner only"
+on public.session_answers for select to authenticated
+using (public.is_class_owner(session_id));
+
+-- Explanations can disclose the correct option, so they are not student-readable.
+revoke select (explanation) on public.session_questions from authenticated;
