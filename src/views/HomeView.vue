@@ -5,14 +5,59 @@ import { useProgress } from '../composables/useProgress'
 
 const { data, accuracy } = useProgress()
 
-type LearningModule = [string, string, string, string]
-
-const modules: LearningModule[] = [
-  ['01', 'Las seis cuerdas', 'Conoce los nombres y sonidos de las cuerdas al aire.', 'Fundamentos'],
-  ['02', 'Notas en el diapasón', 'Descubre cómo cambian las notas al avanzar por los trastes.', 'Interactivo'],
-  ['03', 'Notas en el pentagrama', 'Lee una nota en clave de sol y búscala en el diapasón.', 'Interactivo'],
-  ['04', 'Del papel a la guitarra', 'Conecta lo que lees con las posiciones del instrumento.', 'Próximamente'],
+const modules = [
+  { id: '01', title: 'Las seis cuerdas', description: 'Explora las cuerdas al aire, sus sonidos, octavas y escritura en el pentagrama.', tag: 'Fundamentos', to: '/fundamentos', progressId: 1 },
+  { id: '02', title: 'Notas en el diapasón', description: 'Encuentra notas en distintas cuerdas y posiciones del mástil.', tag: 'Orientación en el instrumento', to: '/practicar', progressId: 2 },
+  { id: '03', title: 'Notas en el pentagrama', description: 'Lee notas en clave de sol y localízalas en la guitarra.', tag: 'Lectura musical', to: '/notas-pentagrama', progressId: 3 },
+  { id: '04', title: 'Del papel a la guitarra', description: 'Lee pequeñas frases musicales y tócalas en el instrumento.', tag: 'Lectura e interpretación', to: '/del-papel-a-la-guitarra', progressId: 4 },
 ]
 </script>
 
-<template><div class="page"><section class="relative overflow-hidden rounded-[28px] bg-[#173f36] px-6 py-9 text-white sm:px-10 sm:py-12"><div class="relative z-10 max-w-[590px]"><p class="text-xs font-extrabold uppercase tracking-[.18em] text-[#a6d6bf]">Tu aventura musical comienza aquí</p><h1 class="mt-3 text-4xl font-black leading-tight sm:text-5xl">Aprende guitarra.<br><span class="text-[#9dd9b7]">Lee música.</span></h1><p class="mt-4 max-w-[470px] text-[15px] leading-7 text-[#d3e3da]">Descubre cómo se conectan las notas del pentagrama con cada cuerda y traste de tu guitarra.</p><RouterLink to="/practicar" class="mt-7 inline-flex items-center gap-2 rounded-xl bg-[#b6e5c7] px-5 py-3 font-extrabold text-[#174638]">Comenzar a practicar <ArrowRight :size="18"/></RouterLink></div><Music2 class="pointer-events-none absolute bottom-5 right-12 hidden text-[#9dd9b7]/20 sm:block" :size="170" :stroke-width="1"/></section><section class="mt-7 grid gap-4 sm:grid-cols-3"><div class="panel p-5"><p class="text-xs font-bold uppercase text-[#829087]">Lecciones completadas</p><p class="mt-2 text-3xl font-black">{{data.completed.length}}<span class="ml-1 text-sm text-[#89958e]">/ 4</span></p><div class="mt-3 h-2 overflow-hidden rounded-full bg-[#edf1ec]"><div class="h-full rounded-full bg-[#4c9c7c]" :style="{width:data.completed.length/4*100+'%'}"/></div></div><div class="panel p-5"><p class="text-xs font-bold uppercase text-[#829087]">Precisión</p><p class="mt-2 text-3xl font-black">{{accuracy}}%</p><p class="mt-2 text-xs text-[#89958e]">En tus ejercicios</p></div><div class="panel flex items-center gap-3 p-5"><span class="grid h-11 w-11 place-items-center rounded-2xl bg-[#edf5ee] text-[#34795d]"><Sparkles/></span><div><p class="font-extrabold">¡Sigue avanzando!</p><p class="mt-1 text-xs text-[#829087]">Un poco de práctica cada día.</p></div></div></section><section class="mt-9"><div class="mb-4"><p class="eyebrow">Tu camino musical</p><h2 class="mt-1 text-2xl font-black">Ruta de aprendizaje</h2></div><div class="grid gap-3 sm:grid-cols-2"><article v-for="m in modules" :key="m[0]" class="panel flex gap-4 p-5"><span class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-[#edf4ee] text-lg font-black text-[#39765c]">{{m[0]}}</span><div class="min-w-0 flex-1"><div class="flex items-center gap-2"><h3 class="font-extrabold">{{m[1]}}</h3><CheckCircle2 v-if="m[0]==='01'&&data.completed.includes(1)" class="text-[#4c9c7c]" :size="17"/></div><p class="mt-1 text-sm leading-5 text-[#7b8981]">{{m[2]}}</p><span class="mt-3 inline-block text-[11px] font-bold uppercase tracking-wider text-[#5b8b73]">{{m[3]}}</span></div><RouterLink v-if="m[0]!=='04'" :to="m[0]==='03'?'/notas-pentagrama':'/practicar'" class="self-center rounded-full p-2 text-[#4a8068]" aria-label="Abrir módulo"><ArrowRight/></RouterLink><span v-else class="self-center text-xs text-[#a0aaa3]">Pronto</span></article></div></section></div></template>
+<template>
+  <div class="page">
+    <section class="relative overflow-hidden rounded-[28px] bg-[#173f36] px-6 py-9 text-white sm:px-10 sm:py-12">
+      <div class="relative z-10 max-w-[590px]">
+        <p class="text-xs font-extrabold uppercase tracking-[.18em] text-[#a6d6bf]">Tu aventura musical comienza aquí</p>
+        <h1 class="mt-3 text-4xl font-black leading-tight sm:text-5xl">Aprende guitarra.<br><span class="text-[#9dd9b7]">Lee música.</span></h1>
+        <p class="mt-4 max-w-[470px] text-[15px] leading-7 text-[#d3e3da]">Conoce tu instrumento, descubre las notas y aprende a transformar la lectura musical en interpretación.</p>
+        <RouterLink to="/fundamentos" class="mt-7 inline-flex items-center gap-2 rounded-xl bg-[#b6e5c7] px-5 py-3 font-extrabold text-[#174638]">Comenzar a aprender <ArrowRight :size="18"/></RouterLink>
+      </div>
+      <Music2 class="pointer-events-none absolute bottom-5 right-12 hidden text-[#9dd9b7]/20 sm:block" :size="170" :stroke-width="1"/>
+    </section>
+
+    <section class="mt-7 grid gap-4 sm:grid-cols-3">
+      <div class="panel p-5">
+        <p class="text-xs font-bold uppercase text-[#829087]">Lecciones completadas</p>
+        <p class="mt-2 text-3xl font-black">{{data.completed.length}}<span class="ml-1 text-sm text-[#89958e]">/ 4</span></p>
+        <div class="mt-3 h-2 overflow-hidden rounded-full bg-[#edf1ec]"><div class="h-full rounded-full bg-[#4c9c7c]" :style="{width:data.completed.length/4*100+'%'}"/></div>
+      </div>
+      <div class="panel p-5">
+        <p class="text-xs font-bold uppercase text-[#829087]">Precisión</p>
+        <p class="mt-2 text-3xl font-black">{{accuracy}}%</p>
+        <p class="mt-2 text-xs text-[#89958e]">En tus ejercicios evaluados</p>
+      </div>
+      <div class="panel flex items-center gap-3 p-5">
+        <span class="grid h-11 w-11 place-items-center rounded-2xl bg-[#edf5ee] text-[#34795d]"><Sparkles/></span>
+        <div><p class="font-extrabold">¡Sigue avanzando!</p><p class="mt-1 text-xs text-[#829087]">Un poco de práctica cada día.</p></div>
+      </div>
+    </section>
+
+    <section class="mt-9">
+      <div class="mb-4"><p class="eyebrow">Tu camino musical</p><h2 class="mt-1 text-2xl font-black">Ruta de aprendizaje</h2></div>
+      <div class="grid gap-3 sm:grid-cols-2">
+        <article v-for="module in modules" :key="module.id" class="panel flex gap-4 p-4 sm:p-5">
+          <span class="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#edf4ee] text-base font-black text-[#39765c]">{{module.id}}</span>
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center gap-2">
+              <h3 class="font-extrabold">{{module.title}}</h3>
+              <CheckCircle2 v-if="data.completed.includes(module.progressId)" class="shrink-0 text-[#4c9c7c]" :size="16"/>
+            </div>
+            <p class="mt-1 text-sm leading-5 text-[#7b8981]">{{module.description}}</p>
+            <span class="mt-3 inline-block text-[10px] font-bold uppercase tracking-wider text-[#5b8b73]">{{module.tag}}</span>
+          </div>
+          <RouterLink :to="module.to" class="self-center rounded-full p-2 text-[#4a8068]" :aria-label="'Abrir módulo ' + module.id"><ArrowRight/></RouterLink>
+        </article>
+      </div>
+    </section>
+  </div>
+</template>
