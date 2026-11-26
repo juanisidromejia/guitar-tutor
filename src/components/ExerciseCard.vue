@@ -3,7 +3,8 @@ import { computed, ref } from 'vue'
 import { ArrowRight, CheckCircle2, Volume2, XCircle } from 'lucide-vue-next'
 import GuitarFretboard from './GuitarFretboard.vue'
 import { fretMidi } from '../engines/guitar/fretboard'
-import { midiName, midiHz } from '../engines/music/pitch'
+import { midiName } from '../engines/music/pitch'
+import { playGuitarNote } from '../engines/audio/guitarSound'
 import { useProgress } from '../composables/useProgress'
 
 const { record, complete } = useProgress()
@@ -27,6 +28,7 @@ function next() {
 function choose(position: { string: number; fret: number; midi: number }) {
   if (answered.value) return
   selected.value = position
+  void playGuitarNote(position.midi, position.string)
   correct.value = fretMidi(position.string, position.fret) === target.value
   record(correct.value)
 
@@ -36,42 +38,7 @@ function choose(position: { string: number; fret: number; midi: number }) {
   }
 }
 
-async function play() {
-  const AudioContextClass = window.AudioContext
-  if (!AudioContextClass) return
 
-  const context = new AudioContextClass()
-  if (context.state === 'suspended') await context.resume()
-
-  const now = context.currentTime
-  const duration = 2.4
-  const fundamental = midiHz(target.value)
-  const master = context.createGain()
-  master.gain.setValueAtTime(0.0001, now)
-  master.gain.linearRampToValueAtTime(0.18, now + 0.018)
-  master.gain.exponentialRampToValueAtTime(0.0001, now + duration)
-  master.connect(context.destination)
-
-  // Suma de armónicos con decaimiento: una cuerda pulsada suena más
-  // natural que un oscilador sinusoidal aislado.
-  for (let harmonic = 1; harmonic <= 9; harmonic++) {
-    const oscillator = context.createOscillator()
-    const partialGain = context.createGain()
-    const amplitude = 1 / Math.pow(harmonic, 1.35)
-    const partialDuration = duration / (1 + (harmonic - 1) * 0.14)
-
-    oscillator.type = 'sine'
-    oscillator.frequency.value = fundamental * harmonic
-    partialGain.gain.setValueAtTime(amplitude, now)
-    partialGain.gain.exponentialRampToValueAtTime(0.0001, now + partialDuration)
-    oscillator.connect(partialGain)
-    partialGain.connect(master)
-    oscillator.start(now)
-    oscillator.stop(now + duration)
-  }
-
-  window.setTimeout(() => void context.close(), (duration + 0.15) * 1000)
-}
 </script>
 
 <template>
@@ -91,7 +58,7 @@ async function play() {
         <p class="mt-0.5 text-2xl font-black text-[#176b5b]">{{ name.name }}</p>
         <p class="text-xs text-[#75827b]">Octava {{ name.octave }}</p>
       </div>
-      <button class="secondary flex items-center gap-2" @click="play">
+      <button class="secondary flex items-center gap-2" @click="playGuitarNote(target)">
         <Volume2 :size="19" /> Escuchar
       </button>
     </div>
