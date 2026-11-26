@@ -9,7 +9,8 @@ const modules = [
   { id: '01', title: 'Las seis cuerdas', description: 'Explora las cuerdas al aire, sus sonidos, octavas y escritura en el pentagrama.', tag: 'Fundamentos', to: '/fundamentos', progressId: 1 },
   { id: '02', title: 'Notas en el diapasón', description: 'Encuentra notas en distintas cuerdas y posiciones del mástil.', tag: 'Orientación en el instrumento', to: '/practicar', progressId: 2 },
   { id: '03', title: 'Notas en el pentagrama', description: 'Lee notas en clave de sol y localízalas en la guitarra.', tag: 'Lectura musical', to: '/notas-pentagrama', progressId: 3 },
-  { id: '04', title: 'Del papel a la guitarra', description: 'Lee pequeñas frases musicales y tócalas en el instrumento.', tag: 'Lectura e interpretación', to: '/del-papel-a-la-guitarra', progressId: 4 },
+  { id: '04', title: 'Lectura rítmica', description: 'Comprende el pulso, las figuras, los silencios y los primeros patrones rítmicos.', tag: 'Ritmo y lectura', to: '/lectura-ritmica' },
+  { id: '05', title: 'Del papel a la guitarra', description: 'Lee pequeñas frases musicales y tócalas en el instrumento.', tag: 'Lectura e interpretación', to: '/del-papel-a-la-guitarra', progressId: 4 },
 ]
 </script>
 
@@ -50,7 +51,7 @@ const modules = [
           <div class="min-w-0 flex-1">
             <div class="flex items-center gap-2">
               <h3 class="font-extrabold">{{module.title}}</h3>
-              <CheckCircle2 v-if="data.completed.includes(module.progressId)" class="shrink-0 text-[#4c9c7c]" :size="16"/>
+              <CheckCircle2 v-if="module.progressId && data.completed.includes(module.progressId)" class="shrink-0 text-[#4c9c7c]" :size="16"/>
             </div>
             <p class="mt-1 text-sm leading-5 text-[#7b8981]">{{module.description}}</p>
             <span class="mt-3 inline-block text-[10px] font-bold uppercase tracking-wider text-[#5b8b73]">{{module.tag}}</span>
