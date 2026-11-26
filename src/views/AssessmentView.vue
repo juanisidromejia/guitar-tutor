@@ -45,8 +45,17 @@ const categoryResults = computed(() => (['Pentagrama', 'Diapasón', 'Ritmo'] as 
 }))
 const answered = computed(() => Object.keys(answers.value).length)
 
+function shuffleQuestions(items: Question[]) {
+  const shuffled = [...items]
+  for (let i = shuffled.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+  }
+  return shuffled
+}
+
 function begin() {
-  questionOrder.value = [...questions].sort(() => Math.random() - 0.5)
+  questionOrder.value = shuffleQuestions(questions)
   started.value = true
   finished.value = false
   index.value = 0
