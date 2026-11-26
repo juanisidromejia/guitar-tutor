@@ -25,7 +25,7 @@ const extraLessons = [
   { title: 'Negras y silencios', description: 'Combina sonidos y pausas. Cuando aparece un silencio de negra, mantén el pulso, pero no des ninguna palmada.', pattern: [{label:'Negra',units:2},{label:'Silencio',units:2,rest:true},{label:'Negra',units:2},{label:'Silencio',units:2,rest:true}], question: '¿Qué debes hacer durante un silencio de negra?', options: ['Detener el pulso','Mantener el pulso sin sonar','Acelerar'], correct: 'Mantener el pulso sin sonar', explanation: '¡Exacto! El silencio ocupa un pulso igual que la negra, pero no produce sonido.' },
   { title: 'Corcheas y subdivisión', description: 'Una negra puede dividirse en dos partes iguales: dos corcheas. Cuenta «1 y 2 y 3 y 4 y» y procura que todas las subdivisiones sean regulares.', pattern: [{label:'Corchea',units:1},{label:'Corchea',units:1},{label:'Corchea',units:1},{label:'Corchea',units:1},{label:'Negra',units:2},{label:'Corchea',units:1},{label:'Corchea',units:1},{label:'Negra',units:2}], question: '¿Cuántas corcheas equivalen a una negra?', options: ['Una','Dos','Cuatro'], correct: 'Dos', explanation: '¡Correcto! Dos corcheas tienen la misma duración que una negra.' },
   { title: 'Blancas y redondas', description: 'La blanca dura dos pulsos y la redonda cuatro. Aprende a sostener el sonido durante toda su duración, sin adelantar la siguiente figura.', pattern: [{label:'Blanca',units:4},{label:'Blanca',units:4}], question: '¿Cuántos pulsos dura una blanca?', options: ['1 pulso','2 pulsos','4 pulsos'], correct: '2 pulsos', explanation: '¡Muy bien! La blanca dura dos pulsos; la redonda dura cuatro.' },
-  { title: 'Lectura combinada', description: 'Combina negras, corcheas, blancas y silencios. Lee de izquierda a derecha y conserva siempre el pulso interno.', pattern: [{label:'Negra',units:2},{label:'Corchea',units:1},{label:'Corchea',units:1},{label:'Silencio',units:2,rest:true},{label:'Blanca',units:4}], question: '¿Cuántas unidades de corchea forman una blanca?', options: ['2','3','4'], correct: '4', explanation: '¡Excelente! Una blanca dura dos negras, es decir, cuatro corcheas.' }
+  { title: 'Lectura combinada', description: 'Combina negras, corcheas, blancas y silencios. Lee de izquierda a derecha y conserva siempre el pulso interno.', pattern: [{label:'Negra',units:2},{label:'Corchea',units:1},{label:'Corchea',units:1},{label:'Silencio',units:2,rest:true},{label:'Negra',units:2}], question: '¿Cuántas unidades de corchea forman una blanca?', options: ['2','3','4'], correct: '4', explanation: '¡Excelente! Una blanca dura dos negras, es decir, cuatro corcheas.' }
 ]
 const activePattern = computed(() => stage.value >= 3 ? extraLessons[stage.value - 3].pattern : pattern)
 const totalUnits = computed(() => activePattern.value.reduce((sum, event) => sum + event.units, 0))
@@ -161,10 +161,7 @@ onUnmounted(stop)
           </div>
           <p v-if="feedback" class="mt-3 text-sm font-semibold" :class="answer === '1 pulso' ? 'text-[#28785e]' : 'text-[#9b6a2d]'">{{feedback}}</p>
         </div>
-        <div v-if="answer === '1 pulso' && stage === 2" class="mt-4 rounded-xl bg-[#eaf4ed] p-4">
-          <p class="font-bold text-[#23664d]">¡Muy bien! Ya puedes cerrar esta primera lección.</p>
-          <button class="mt-3 rounded-xl bg-[#26765b] px-4 py-2.5 text-sm font-bold text-white" @click="finish">Completar lección</button>
-        </div>
+        <div v-if="answer === '1 pulso' && stage === 2" class="mt-4 rounded-xl bg-[#eaf4ed] p-4"><p class="font-bold text-[#23664d]">¡Muy bien! Continúa con las siguientes lecciones para completar el módulo.</p></div>
       </div>
 
       <div v-else class="mt-6">
