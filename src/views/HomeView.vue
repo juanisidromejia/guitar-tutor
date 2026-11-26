@@ -45,7 +45,7 @@ const modules = [
     <section class="mt-9">
       <div class="mb-4"><p class="eyebrow">Tu camino musical</p><h2 class="mt-1 text-2xl font-black">Ruta de aprendizaje</h2></div>
       <div class="grid gap-3 sm:grid-cols-2">
-        <article v-for="module in modules" :key="module.id" class="panel flex gap-4 p-4 sm:p-5">
+        <RouterLink v-for="module in modules" :key="module.id" :to="module.to" class="panel group flex gap-4 p-4 transition hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#176b5b] sm:p-5">
           <span class="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#edf4ee] text-base font-black text-[#39765c]">{{module.id}}</span>
           <div class="min-w-0 flex-1">
             <div class="flex items-center gap-2">
@@ -55,8 +55,8 @@ const modules = [
             <p class="mt-1 text-sm leading-5 text-[#7b8981]">{{module.description}}</p>
             <span class="mt-3 inline-block text-[10px] font-bold uppercase tracking-wider text-[#5b8b73]">{{module.tag}}</span>
           </div>
-          <RouterLink :to="module.to" class="self-center rounded-full p-2 text-[#4a8068]" :aria-label="'Abrir módulo ' + module.id"><ArrowRight/></RouterLink>
-        </article>
+          <ArrowRight class="self-center shrink-0 text-[#4a8068] transition-transform group-hover:translate-x-1" :size="20" />
+        </RouterLink>
       </div>
     </section>
   </div>
