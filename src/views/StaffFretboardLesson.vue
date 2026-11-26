@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { onBeforeUnmount, ref } from 'vue'
-import { ArrowLeft, CheckCircle2, XCircle } from 'lucide-vue-next'
+import { ref } from 'vue'
+import { ArrowLeft, ArrowRight, CheckCircle2, XCircle } from 'lucide-vue-next'
 import { RouterLink } from 'vue-router'
 import GuitarFretboard from '../components/GuitarFretboard.vue'
 import StaffNote from '../components/StaffNote.vue'
@@ -13,10 +13,8 @@ const round = ref(1)
 const target = ref(64)
 const selected = ref<{ string: number; fret: number } | null>(null)
 const feedback = ref<'correct' | 'wrong' | null>(null)
-let advanceTimer: ReturnType<typeof setTimeout> | undefined
 
 function next() {
-  if (advanceTimer) clearTimeout(advanceTimer)
   round.value++
   target.value = notes[(round.value * 5 + 2) % notes.length]
   selected.value = null
@@ -32,15 +30,10 @@ function choose(position: { string: number; fret: number; midi: number }) {
   feedback.value = isCorrect ? 'correct' : 'wrong'
 
   if (isCorrect) {
-    if (advanceTimer) clearTimeout(advanceTimer)
-    advanceTimer = setTimeout(next, 1300)
     complete(3)
   }
 }
 
-onBeforeUnmount(() => {
-  if (advanceTimer) clearTimeout(advanceTimer)
-})
 </script>
 
 <template>
@@ -90,7 +83,13 @@ onBeforeUnmount(() => {
       </div>
       <div v-else-if="feedback === 'correct'" class="mt-2 flex items-center gap-2 rounded-lg bg-[#e9f5ed] p-2 text-[#226447]">
         <CheckCircle2 :size="18" />
-        <p class="text-xs font-semibold">¡Correcto! Has relacionado el pentagrama con la guitarra. Siguiente nota…</p>
+        <div class="flex-1">
+          <p class="text-xs font-semibold">¡Correcto! Has relacionado el pentagrama con la guitarra.</p>
+          <p class="mt-0.5 text-[11px]">Cuando estés listo, continúa con la siguiente nota.</p>
+        </div>
+        <button class="primary flex shrink-0 items-center gap-1.5 px-3 py-2 text-xs" @click="next">
+          Continuar <ArrowRight :size="15" />
+        </button>
       </div>
       <p v-else class="mt-2 text-center text-xs text-[#788780]">
         Selecciona una cuerda y un traste. La respuesta se comprueba automáticamente.
