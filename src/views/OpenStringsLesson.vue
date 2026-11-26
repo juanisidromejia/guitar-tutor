@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { ArrowLeft, CheckCircle2 } from 'lucide-vue-next'
-import { RouterLink } from 'vue-router'
+import { CheckCircle2 } from 'lucide-vue-next'
 import StaffNote from '../components/StaffNote.vue'
 import { midiHz, midiName } from '../engines/music/pitch'
 import { playGuitarNote } from '../engines/audio/guitarSound'
@@ -34,10 +33,6 @@ function selectString(string: typeof strings[number]) {
 
 <template>
   <div class="page">
-    <RouterLink to="/" class="mb-3 inline-flex items-center gap-2 text-xs font-bold text-[#698077]">
-      <ArrowLeft :size="15" /> Volver al inicio
-    </RouterLink>
-
     <header class="mb-4">
       <p class="eyebrow">Fundamentos · Nivel 1</p>
       <h1 class="mt-1 text-2xl font-black">Conoce las seis cuerdas</h1>
