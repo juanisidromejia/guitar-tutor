@@ -5,7 +5,8 @@ import { RouterLink } from 'vue-router'
 import GuitarFretboard from '../components/GuitarFretboard.vue'
 import StaffNote from '../components/StaffNote.vue'
 import { fretMidi } from '../engines/guitar/fretboard'
-import { midiHz, midiName } from '../engines/music/pitch'
+import { midiName } from '../engines/music/pitch'
+import { playGuitarNote } from '../engines/audio/guitarSound'
 import { useProgress } from '../composables/useProgress'
 
 const { record, complete } = useProgress()
@@ -21,6 +22,7 @@ const targetName = computed(() => midiName(target.value))
 function choose(position: { string: number; fret: number; midi: number }) {
   if (feedback.value === 'correct' || finished.value) return
   selected.value = position
+  void playGuitarNote(position.midi, position.string)
   const ok = fretMidi(position.string, position.fret) === target.value - 12
   record(ok)
   feedback.value = ok ? 'correct' : 'wrong'
@@ -44,32 +46,7 @@ function restart() {
   finished.value = false
 }
 
-async function play() {
-  const AudioContextClass = window.AudioContext
-  if (!AudioContextClass) return
-  const context = new AudioContextClass()
-  if (context.state === 'suspended') await context.resume()
-  const now = context.currentTime
-  const duration = 1.5
-  const master = context.createGain()
-  master.gain.setValueAtTime(0.0001, now)
-  master.gain.linearRampToValueAtTime(0.14, now + 0.02)
-  master.gain.exponentialRampToValueAtTime(0.0001, now + duration)
-  master.connect(context.destination)
-  for (let harmonic = 1; harmonic <= 7; harmonic++) {
-    const oscillator = context.createOscillator()
-    const gain = context.createGain()
-    oscillator.type = 'sine'
-    oscillator.frequency.value = midiHz(target.value - 12) * harmonic
-    gain.gain.setValueAtTime(1 / Math.pow(harmonic, 1.4), now)
-    gain.gain.exponentialRampToValueAtTime(0.0001, now + duration / (1 + harmonic * 0.12))
-    oscillator.connect(gain)
-    gain.connect(master)
-    oscillator.start(now)
-    oscillator.stop(now + duration)
-  }
-  window.setTimeout(() => void context.close(), (duration + 0.2) * 1000)
-}
+
 </script>
 
 <template>
@@ -107,7 +84,7 @@ async function play() {
           <p class="mb-1 text-center text-[10px] font-bold uppercase tracking-wide text-[#718078]">Lee esta nota</p>
           <StaffNote :midi="target" />
           <p class="mt-1 text-center text-sm font-black text-[#176b5b]">{{ targetName.name }}{{ targetName.octave }}</p>
-          <button class="secondary mx-auto mt-2 flex items-center gap-2" @click="play">
+          <button class="secondary mx-auto mt-2 flex items-center gap-2" @click="playGuitarNote(target - 12)">
             <Volume2 :size="16" /> Escuchar nota
           </button>
         </div>
