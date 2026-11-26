@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { BookOpen, Guitar, Home, Music2 } from 'lucide-vue-next'
+import { BookOpen, ClipboardCheck, Guitar, Home, Music2 } from 'lucide-vue-next'
 import { RouterLink, RouterView } from 'vue-router'
 </script>
 
@@ -15,6 +15,7 @@ import { RouterLink, RouterView } from 'vue-router'
           <RouterLink class="nav" to="/"><Home :size="17" />Inicio</RouterLink>
           <RouterLink class="nav" to="/practicar"><Guitar :size="17" />Practicar</RouterLink>
           <RouterLink class="nav" to="/partitura"><Music2 :size="17" />Partituras</RouterLink>
+          <RouterLink class="nav" to="/evaluacion"><ClipboardCheck :size="17" />Evaluaciones</RouterLink>
         </nav>
         <span class="rounded-full bg-[#e8f1eb] px-3 py-1.5 text-xs font-bold text-[#286451]">Mi aprendizaje</span>
       </div>
@@ -24,6 +25,7 @@ import { RouterLink, RouterView } from 'vue-router'
       <RouterLink to="/" class="nav flex-col gap-1 text-xs"><Home :size="19" />Inicio</RouterLink>
       <RouterLink to="/practicar" class="nav flex-col gap-1 text-xs"><Guitar :size="19" />Practicar</RouterLink>
       <RouterLink to="/partitura" class="nav flex-col gap-1 text-xs"><BookOpen :size="19" />Partituras</RouterLink>
+      <RouterLink to="/evaluacion" class="nav flex-col gap-1 text-xs"><ClipboardCheck :size="19" />Pruebas</RouterLink>
     </nav>
   </div>
 </template>
