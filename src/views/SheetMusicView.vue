@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { defineAsyncComponent, ref } from 'vue'
-import { ArrowLeft, Upload, FileMusic } from 'lucide-vue-next'
-import { RouterLink } from 'vue-router'
+import { Upload, FileMusic } from 'lucide-vue-next'
 
 const Viewer = defineAsyncComponent(() => import('../components/AlphaTabViewer.vue'))
 const file = ref<File | null>(null)
@@ -21,10 +20,6 @@ function choose(event: Event) {
 
 <template>
   <div class="page">
-    <RouterLink to="/" class="mb-6 inline-flex items-center gap-2 text-sm font-bold text-[#698077]">
-      <ArrowLeft :size="17" /> Volver al inicio
-    </RouterLink>
-
     <div class="mb-6">
       <p class="eyebrow">Lectura y escucha musical</p>
       <h1 class="mt-1 text-3xl font-black">Mis partituras</h1>
