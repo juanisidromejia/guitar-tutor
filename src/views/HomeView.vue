@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ArrowRight, CheckCircle2, ClipboardCheck, Music2, Sparkles } from 'lucide-vue-next'
+import { ArrowRight, CheckCircle2, Music2, Sparkles } from 'lucide-vue-next'
 import { RouterLink } from 'vue-router'
 import { useProgress } from '../composables/useProgress'
 
