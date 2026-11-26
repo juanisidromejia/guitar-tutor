@@ -8,12 +8,12 @@ import { useProgress } from '../composables/useProgress'
 
 const { complete } = useProgress()
 const strings = [
-  { number: 6, name: 'Mi', midi: 40, thickness: 5 },
-  { number: 5, name: 'La', midi: 45, thickness: 4 },
-  { number: 4, name: 'Re', midi: 50, thickness: 3 },
-  { number: 3, name: 'Sol', midi: 55, thickness: 2 },
-  { number: 2, name: 'Si', midi: 59, thickness: 1.5 },
-  { number: 1, name: 'Mi', midi: 64, thickness: 1 },
+  { number: 1, name: 'Mi', midi: 64, thickness: 1, register: 'Aguda' },
+  { number: 2, name: 'Si', midi: 59, thickness: 1.5, register: 'Aguda' },
+  { number: 3, name: 'Sol', midi: 55, thickness: 2, register: 'Media' },
+  { number: 4, name: 'Re', midi: 50, thickness: 3, register: 'Media' },
+  { number: 5, name: 'La', midi: 45, thickness: 4, register: 'Grave' },
+  { number: 6, name: 'Mi', midi: 40, thickness: 5, register: 'Grave' },
 ]
 const selected = ref(strings[0])
 const visited = ref<number[]>([])
@@ -28,23 +28,26 @@ function selectString(string: typeof strings[number]) {
   if (visited.value.length === strings.length) complete(1)
 }
 
-// Síntesis por cuerda pulsada (Karplus–Strong): una excitación breve de ruido
-// recircula por una línea de retardo filtrada, produciendo armónicos y decaimiento.
+// Síntesis de cuerda pulsada (Karplus–Strong), con transitorio de púa
+// y resonancias suaves que evocan el cuerpo de una guitarra acústica.
 function createPluckedStringBuffer(context: AudioContext, frequency: number, stringNumber: number) {
-  const duration = 1.5
+  const duration = 1.8
   const sampleRate = context.sampleRate
   const frameCount = Math.floor(sampleRate * duration)
   const buffer = context.createBuffer(1, frameCount, sampleRate)
   const samples = buffer.getChannelData(0)
   const delayLength = Math.max(2, Math.round(sampleRate / frequency))
   const delay = new Float32Array(delayLength)
+  const pickPosition = 0.18 + stringNumber * 0.012
 
+  // Excitación inicial con un pequeño filtrado según el punto de pulsación.
   for (let i = 0; i < delayLength; i++) {
-    delay[i] = Math.random() * 2 - 1
+    const pluckShape = Math.sin(Math.PI * (i / delayLength + pickPosition))
+    delay[i] = (Math.random() * 2 - 1) * pluckShape
   }
 
   let index = 0
-  const damping = 0.9964 + (stringNumber - 1) * 0.00012
+  const damping = 0.9961 + (stringNumber - 1) * 0.00013
 
   for (let i = 0; i < frameCount; i++) {
     const next = (index + 1) % delayLength
@@ -66,20 +69,51 @@ async function play() {
 
   const context = audioContext
   const now = context.currentTime
-  const duration = 1.5
+  const duration = 1.8
+  const frequency = midiHz(selected.value.midi)
   const source = context.createBufferSource()
+  const bodyFilter = context.createBiquadFilter()
+  const toneFilter = context.createBiquadFilter()
   const envelope = context.createGain()
 
-  source.buffer = createPluckedStringBuffer(context, midiHz(selected.value.midi), selected.value.number)
+  source.buffer = createPluckedStringBuffer(context, frequency, selected.value.number)
+  toneFilter.type = 'lowpass'
+  toneFilter.frequency.value = selected.value.number >= 4 ? 4200 : 6200
+  toneFilter.Q.value = 0.55
+  bodyFilter.type = 'peaking'
+  bodyFilter.frequency.value = selected.value.number >= 4 ? 185 : 230
+  bodyFilter.Q.value = 0.9
+  bodyFilter.gain.value = 2.2
   envelope.gain.setValueAtTime(0.0001, now)
-  envelope.gain.linearRampToValueAtTime(0.2, now + 0.006)
-  envelope.gain.setValueAtTime(0.16, now + 0.035)
+  envelope.gain.linearRampToValueAtTime(0.24, now + 0.008)
+  envelope.gain.setValueAtTime(0.19, now + 0.045)
   envelope.gain.exponentialRampToValueAtTime(0.0001, now + duration)
 
-  source.connect(envelope)
+  source.connect(toneFilter)
+  toneFilter.connect(bodyFilter)
+  bodyFilter.connect(envelope)
   envelope.connect(context.destination)
   source.start(now)
   source.stop(now + duration)
+
+  // Ruido muy breve y filtrado: reproduce el pequeño ataque de la uña o púa.
+  const transientBuffer = context.createBuffer(1, Math.floor(context.sampleRate * 0.025), context.sampleRate)
+  const transientSamples = transientBuffer.getChannelData(0)
+  for (let i = 0; i < transientSamples.length; i++) {
+    transientSamples[i] = (Math.random() * 2 - 1) * (1 - i / transientSamples.length)
+  }
+  const transient = context.createBufferSource()
+  const transientFilter = context.createBiquadFilter()
+  const transientGain = context.createGain()
+  transient.buffer = transientBuffer
+  transientFilter.type = 'highpass'
+  transientFilter.frequency.value = 1700
+  transientGain.gain.setValueAtTime(0.035, now)
+  transientGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.025)
+  transient.connect(transientFilter)
+  transientFilter.connect(transientGain)
+  transientGain.connect(context.destination)
+  transient.start(now)
 }
 
 onUnmounted(() => {
@@ -114,9 +148,12 @@ onUnmounted(() => {
       </div>
 
       <div class="rounded-xl bg-[#f7f4ed] p-3 sm:p-4">
-        <div class="mb-2 flex justify-between px-1 text-[10px] font-bold uppercase tracking-wider text-[#8a795f]">
-          <span>Grave</span><span>Agudo</span>
+        <div class="mb-2 flex items-center justify-between gap-2 px-1 text-[10px] font-bold uppercase tracking-wider text-[#8a795f]">
+          <span>Arriba · 1.ª cuerda · Aguda</span><span>Abajo · 6.ª cuerda · Grave</span>
         </div>
+        <p class="mb-3 rounded-lg bg-white/70 px-3 py-2 text-[11px] leading-4 text-[#766d5f]">
+          Mira la guitarra como si la inclinaras hacia ti para ver sus cuerdas: la más aguda queda arriba y la más grave abajo.
+        </p>
         <div class="space-y-2">
           <button
             v-for="string in strings"
@@ -134,7 +171,7 @@ onUnmounted(() => {
             <CheckCircle2 v-if="visited.includes(string.number)" :size="16" class="text-[#4c9c7c]" />
           </button>
         </div>
-        <p class="mt-3 text-center text-[10px] text-[#8b806f]">Representación esquemática de las seis cuerdas al aire</p>
+        <p class="mt-3 text-center text-[10px] text-[#8b806f]">Vista orientativa: primera cuerda arriba, sexta cuerda abajo</p>
       </div>
 
       <div class="mt-3 grid gap-3 sm:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
