@@ -43,7 +43,10 @@ function play() {
   stop()
   playing.value = true
   activeUnit.value = -1
-  stopPlayback = playRhythm(pattern, bpm.value, meter.value, unit => {
+  const events = stage.value === 0
+    ? Array.from({ length: meter.value }, () => ({ label: 'Negra', units: 2 }))
+    : pattern
+  stopPlayback = playRhythm(events, bpm.value, stage.value === 0 ? meter.value : 4, unit => {
     activeUnit.value = unit
   }, () => {
     playing.value = false
@@ -129,9 +132,9 @@ onUnmounted(stop)
         <p class="text-sm leading-6 text-[#687970]">Observa este compás de 4/4. Cada casilla pequeña representa media pulsación. Escucha el patrón y sigue el resaltado de izquierda a derecha.</p>
         <div class="mt-5 rounded-2xl bg-[#f3f7f3] p-4 sm:p-6">
           <div class="flex justify-center gap-1">
-            <div v-for="unit in totalUnits" :key="unit" class="flex h-20 min-w-0 flex-1 flex-col items-center justify-center rounded-xl border transition" :class="activeUnit === unit-1 ? 'border-[#28785e] bg-[#d8eee0]' : 'border-[#e3ebe4] bg-white'">
-              <span class="text-2xl font-semibold">{{unit % 2 === 1 ? (unit === 1 ? '♩' : '♪') : '·'}}</span>
-              <span class="mt-1 text-[10px] text-[#7c8982]">{{Math.ceil(unit/2)}}</span>
+            <div v-for="(event, index) in positions" :key="index" class="flex h-20 min-w-0 flex-col items-center justify-center rounded-xl border transition" :style="{ flex: event.units }" :class="activeUnit >= event.start && activeUnit < event.start + event.units ? 'border-[#28785e] bg-[#d8eee0]' : 'border-[#e3ebe4] bg-white'">
+              <span class="text-3xl font-semibold">{{event.symbol}}</span>
+              <span class="mt-1 text-[10px] text-[#7c8982]">{{event.label}}</span>
             </div>
           </div>
           <div class="mt-4 flex flex-wrap items-center justify-between gap-3">
