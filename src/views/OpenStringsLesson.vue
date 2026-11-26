@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { computed, onUnmounted, ref } from 'vue'
+import { computed, ref } from 'vue'
 import { ArrowLeft, CheckCircle2 } from 'lucide-vue-next'
 import { RouterLink } from 'vue-router'
 import StaffNote from '../components/StaffNote.vue'
 import { midiHz, midiName } from '../engines/music/pitch'
+import { playGuitarNote } from '../engines/audio/guitarSound'
 import { useProgress } from '../composables/useProgress'
 
 const { complete } = useProgress()
@@ -21,140 +22,14 @@ const visited = ref<number[]>([])
 const note = computed(() => midiName(selectedString.value.midi))
 const writtenNote = computed(() => midiName(selectedString.value.midi + 12))
 
-let audioContext: AudioContext | null = null
-
 function selectString(string: typeof strings[number]) {
   selected.value = string
   if (!visited.value.includes(string.number)) visited.value.push(string.number)
   if (visited.value.length === strings.length) complete(1)
-  void play()
+  void playGuitarNote(string.midi, string.number)
 }
 
-// Síntesis de cuerda pulsada (Karplus–Strong), con transitorio de púa
-// y resonancias suaves que evocan el cuerpo de una guitarra acústica.
-function createRoomImpulse(context: AudioContext, duration = 0.72) {
-  const sampleRate = context.sampleRate
-  const frameCount = Math.floor(sampleRate * duration)
-  const impulse = context.createBuffer(2, frameCount, sampleRate)
 
-  for (let channel = 0; channel < impulse.numberOfChannels; channel++) {
-    const samples = impulse.getChannelData(channel)
-    for (let i = 0; i < frameCount; i++) {
-      const decay = Math.pow(1 - i / frameCount, 2.8)
-      samples[i] = (Math.random() * 2 - 1) * decay
-    }
-  }
-
-  return impulse
-}
-
-function createPluckedStringBuffer(context: AudioContext, frequency: number, stringNumber: number) {
-  const duration = 1.8
-  const sampleRate = context.sampleRate
-  const frameCount = Math.floor(sampleRate * duration)
-  const buffer = context.createBuffer(1, frameCount, sampleRate)
-  const samples = buffer.getChannelData(0)
-  const delayLength = Math.max(2, Math.round(sampleRate / frequency))
-  const delay = new Float32Array(delayLength)
-  const pickPosition = 0.18 + stringNumber * 0.012
-
-  // Excitación inicial con un pequeño filtrado según el punto de pulsación.
-  for (let i = 0; i < delayLength; i++) {
-    const pluckShape = Math.sin(Math.PI * (i / delayLength + pickPosition))
-    delay[i] = (Math.random() * 2 - 1) * pluckShape
-  }
-
-  let index = 0
-  const damping = 0.9961 + (stringNumber - 1) * 0.00013
-
-  for (let i = 0; i < frameCount; i++) {
-    const next = (index + 1) % delayLength
-    const filtered = (delay[index] + delay[next]) * 0.5 * damping
-    delay[index] = filtered
-    samples[i] = filtered
-    index = next
-  }
-
-  return buffer
-}
-
-async function play() {
-  const AudioContextClass = window.AudioContext
-  if (!AudioContextClass) return
-
-  audioContext ??= new AudioContextClass()
-  if (audioContext.state === 'suspended') await audioContext.resume()
-
-  const context = audioContext
-  const now = context.currentTime
-  const duration = 1.8
-  const frequency = midiHz(selectedString.value.midi)
-  const source = context.createBufferSource()
-  const bodyFilter = context.createBiquadFilter()
-  const toneFilter = context.createBiquadFilter()
-  const lowShelf = context.createBiquadFilter()
-  const convolver = context.createConvolver()
-  const dryGain = context.createGain()
-  const wetGain = context.createGain()
-  const envelope = context.createGain()
-
-  source.buffer = createPluckedStringBuffer(context, frequency, selectedString.value.number)
-  toneFilter.type = 'lowpass'
-  toneFilter.frequency.value = selectedString.value.number >= 4 ? 4200 : 6200
-  toneFilter.Q.value = 0.55
-  bodyFilter.type = 'peaking'
-  bodyFilter.frequency.value = selectedString.value.number >= 4 ? 185 : 230
-  bodyFilter.Q.value = 0.9
-  bodyFilter.gain.value = 2.2
-  lowShelf.type = 'lowshelf'
-  lowShelf.frequency.value = 155
-  lowShelf.gain.value = 2.8
-  convolver.buffer = createRoomImpulse(context)
-  dryGain.gain.value = 0.9
-  wetGain.gain.value = 0.18
-  envelope.gain.setValueAtTime(0.0001, now)
-  envelope.gain.linearRampToValueAtTime(0.24, now + 0.008)
-  envelope.gain.setValueAtTime(0.19, now + 0.045)
-  envelope.gain.exponentialRampToValueAtTime(0.0001, now + duration)
-
-  source.connect(toneFilter)
-  toneFilter.connect(lowShelf)
-  lowShelf.connect(bodyFilter)
-  bodyFilter.connect(envelope)
-  envelope.connect(dryGain)
-  dryGain.connect(context.destination)
-  envelope.connect(convolver)
-  convolver.connect(wetGain)
-  wetGain.connect(context.destination)
-  source.start(now)
-  source.stop(now + duration)
-
-  // Ruido muy breve y filtrado: reproduce el pequeño ataque de la uña o púa.
-  const transientBuffer = context.createBuffer(1, Math.floor(context.sampleRate * 0.025), context.sampleRate)
-  const transientSamples = transientBuffer.getChannelData(0)
-  for (let i = 0; i < transientSamples.length; i++) {
-    transientSamples[i] = (Math.random() * 2 - 1) * (1 - i / transientSamples.length)
-  }
-  const transient = context.createBufferSource()
-  const transientFilter = context.createBiquadFilter()
-  const transientGain = context.createGain()
-  transient.buffer = transientBuffer
-  transientFilter.type = 'highpass'
-  transientFilter.frequency.value = 1700
-  transientGain.gain.setValueAtTime(0.035, now)
-  transientGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.025)
-  transient.connect(transientFilter)
-  transientFilter.connect(transientGain)
-  transientGain.connect(context.destination)
-  transient.start(now)
-}
-
-onUnmounted(() => {
-  if (audioContext) {
-    void audioContext.close()
-    audioContext = null
-  }
-})
 </script>
 
 <template>
