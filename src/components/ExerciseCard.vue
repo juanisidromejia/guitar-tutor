@@ -47,7 +47,7 @@ function choose(position: { string: number; fret: number; midi: number }) {
       <div>
         <p class="eyebrow">Reto de notas · Nivel 1</p>
         <h2 class="mt-0.5 text-xl font-black">Encuentra la nota</h2>
-        <p class="mt-0.5 text-xs text-[#788780]">Escucha y localiza la nota en el diapasón.</p>
+        <p class="mt-0.5 text-xs text-[#788780]">La nota indicada corresponde al sonido real de la guitarra. Escúchala y localízala en el diapasón.</p>
       </div>
       <span class="rounded-full bg-[#eef4ef] px-2.5 py-1 text-[11px] font-bold text-[#426c5b]">Ronda {{ round }}</span>
     </div>
@@ -66,7 +66,7 @@ function choose(position: { string: number; fret: number; midi: number }) {
     <GuitarFretboard :selected="selected" :disabled="answered" @select="choose" />
 
     <p class="mt-2 text-center text-xs text-[#788780]">
-      Toca directamente la cuerda y el traste que corresponden a la nota.
+      Las etiquetas muestran la altura que suena. Recuerda que en el pentagrama de guitarra esa misma altura se escribe una octava más arriba.
     </p>
 
     <div v-if="selected && !correct" class="mt-2 flex items-center gap-2 rounded-lg bg-[#fff1e9] p-2.5 text-[#a14f2d]">
