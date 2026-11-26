@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { ArrowLeft, ArrowRight, CheckCircle2, XCircle } from 'lucide-vue-next'
-import { RouterLink } from 'vue-router'
+import { ArrowRight, CheckCircle2, XCircle } from 'lucide-vue-next'
 import GuitarFretboard from '../components/GuitarFretboard.vue'
 import StaffNote from '../components/StaffNote.vue'
 import { fretMidi } from '../engines/guitar/fretboard'
@@ -40,10 +39,6 @@ function choose(position: { string: number; fret: number; midi: number }) {
 
 <template>
   <div class="page">
-    <RouterLink to="/" class="mb-2 inline-flex items-center gap-2 text-xs font-bold text-[#698077]">
-      <ArrowLeft :size="15" /> Volver al inicio
-    </RouterLink>
-
     <div class="mb-3">
       <p class="eyebrow">Lectura musical · Nivel 1</p>
       <h1 class="mt-0.5 text-xl font-black">Notas en el pentagrama</h1>
