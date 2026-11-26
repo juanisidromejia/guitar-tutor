@@ -10,6 +10,7 @@ Crea un proyecto en Supabase. En Authentication:
 Abre SQL Editor y ejecuta, en orden, todos los archivos de `supabase/migrations/`:
 1. `202611260001_class_sessions.sql`
 2. `202611260002_api_grants.sql`
+3. `202611260003_server_question_bank.sql`
 
 Las migraciones crean las sesiones, preguntas, participantes y respuestas; activan RLS y publican las tablas necesarias en Realtime. El campo `correct_answer` no tiene permiso de lectura desde el navegador. La corrección y puntuación se calculan en una función del servidor.
 
