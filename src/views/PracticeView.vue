@@ -1,12 +1,10 @@
 <script setup lang="ts">
-import { ArrowLeft, Lightbulb } from 'lucide-vue-next'
-import { RouterLink } from 'vue-router'
+import { Lightbulb } from 'lucide-vue-next'
 import ExerciseCard from '../components/ExerciseCard.vue'
 </script>
 
 <template>
   <div class="page">
-    <RouterLink to="/" class="mb-4 inline-flex items-center gap-2 text-sm font-bold text-[#698077]"><ArrowLeft :size="17"/>Volver al inicio</RouterLink>
     <div class="mb-4">
       <p class="eyebrow">Módulo 02 · Orientación en el instrumento</p>
       <h1 class="mt-1 text-2xl font-black">Notas en el diapasón</h1>
