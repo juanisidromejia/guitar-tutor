@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import * as alphaTab from '@coderline/alphatab'
-import { Pause, Play, RotateCcw, Volume2 } from 'lucide-vue-next'
+import { Pause, Play, RotateCcw, Volume2, Music2 } from 'lucide-vue-next'
 
 const props = defineProps<{ file: File }>()
 const host = ref<HTMLDivElement | null>(null)
@@ -11,8 +11,32 @@ const isPlaying = ref(false)
 const error = ref('')
 const loadProgress = ref(0)
 const scoreTitle = ref('')
+const metronomeEnabled = ref(false)
+const countInEnabled = ref(false)
+const metronomeVolume = ref(0.55)
 let api: any = null
 let disposed = false
+
+function applyMetronome() {
+  if (!api) return
+  api.metronomeVolume = metronomeEnabled.value ? metronomeVolume.value : 0
+  api.countInVolume = countInEnabled.value ? metronomeVolume.value : 0
+}
+
+function toggleMetronome() {
+  metronomeEnabled.value = !metronomeEnabled.value
+  applyMetronome()
+}
+
+function updateMetronomeVolume(value: number) {
+  metronomeVolume.value = value
+  applyMetronome()
+}
+
+function toggleCountIn() {
+  countInEnabled.value = !countInEnabled.value
+  applyMetronome()
+}
 
 async function loadScore() {
   if (!host.value) return
@@ -44,7 +68,10 @@ async function loadScore() {
 
     api = new alphaTab.AlphaTabApi(host.value, settings)
     api.playerReady.on(() => {
-      if (!disposed) playerReady.value = true
+      if (!disposed) {
+        playerReady.value = true
+        applyMetronome()
+      }
     })
     api.scoreLoaded.on((score: any) => {
       if (!disposed) {
@@ -52,7 +79,6 @@ async function loadScore() {
         loadingScore.value = false
       }
     })
-    // alphaTab names this event playerFinished (not playbackFinished).
     api.playerFinished.on(() => {
       if (!disposed) isPlaying.value = false
     })
@@ -65,9 +91,8 @@ async function loadScore() {
     const bytes = new Uint8Array(await props.file.arrayBuffer())
     if (disposed) return
 
-    // MusicXML plain text exposes its parts; load them all instead of only the first staff.
     let trackIndexes: number[] | undefined
-    if (/\\.(xml|musicxml)$/i.test(props.file.name)) {
+    if (/\.(xml|musicxml)$/i.test(props.file.name)) {
       const xmlText = new TextDecoder().decode(bytes)
       const xmlDocument = new DOMParser().parseFromString(xmlText, 'application/xml')
       const partCount = xmlDocument.querySelectorAll('part-list > score-part').length
@@ -119,11 +144,7 @@ onBeforeUnmount(() => {
         <p class="mt-1 text-xs text-[#829087]">Partitura MusicXML</p>
       </div>
       <div class="flex items-center gap-2">
-        <button
-          class="primary disabled:cursor-not-allowed disabled:opacity-45"
-          :disabled="!playerReady"
-          @click="togglePlayback"
-        >
+        <button class="primary disabled:cursor-not-allowed disabled:opacity-45" :disabled="!playerReady" @click="togglePlayback">
           <Pause v-if="isPlaying" :size="17" />
           <Play v-else :size="17" />
           {{ isPlaying ? 'Pausar' : 'Reproducir' }}
@@ -133,6 +154,52 @@ onBeforeUnmount(() => {
         </button>
       </div>
     </div>
+
+    <section class="rounded-xl border border-[#e5ece5] bg-[#f8faf8] p-4">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center gap-2">
+          <Music2 :size="18" class="text-[#43866a]" />
+          <div>
+            <p class="text-sm font-bold text-[#40564a]">Metrónomo</p>
+            <p class="text-xs text-[#849087]">Sigue el compás y el tempo de la partitura</p>
+          </div>
+        </div>
+        <button class="secondary" :disabled="!playerReady" :aria-pressed="metronomeEnabled" @click="toggleMetronome">
+          {{ metronomeEnabled ? 'Desactivar' : 'Activar' }}
+        </button>
+      </div>
+      <div class="mt-4 grid gap-4 sm:grid-cols-2">
+        <label class="block">
+          <span class="flex items-center justify-between text-xs font-semibold text-[#64776b]">
+            Volumen del metrónomo
+            <span>{{ Math.round(metronomeVolume * 100) }}%</span>
+          </span>
+          <input
+            class="mt-2 w-full accent-[#43866a]"
+            type="range"
+            min="0"
+            max="1"
+            step="0.05"
+            :value="metronomeVolume"
+            :disabled="!playerReady || !metronomeEnabled"
+            @input="updateMetronomeVolume(Number(($event.target as HTMLInputElement).value))"
+          >
+        </label>
+        <label class="flex items-center gap-3 self-end text-sm text-[#52685c]">
+          <input
+            type="checkbox"
+            class="h-4 w-4 accent-[#43866a]"
+            :checked="countInEnabled"
+            :disabled="!playerReady"
+            @change="toggleCountIn"
+          >
+          Cuenta previa antes de reproducir
+        </label>
+      </div>
+      <p class="mt-3 text-xs leading-5 text-[#8a968e]">
+        La cuenta previa utiliza el sonido del metrónomo antes de iniciar la partitura.
+      </p>
+    </section>
 
     <div v-if="loadingScore" class="rounded-xl bg-[#f2f6f2] px-4 py-3 text-sm text-[#63776b]">
       <div class="flex items-center gap-2">
@@ -152,12 +219,7 @@ onBeforeUnmount(() => {
 
     <div class="flex flex-wrap items-center justify-between gap-2 border-t border-[#edf1ec] pt-3">
       <p class="text-xs text-[#829087]">El cursor sigue la música durante la reproducción.</p>
-      <a
-        href="https://alphatab.net"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="text-xs font-semibold text-[#638174] underline underline-offset-2"
-      >Powered by alphaTab</a>
+      <a href="https://alphatab.net" target="_blank" rel="noopener noreferrer" class="text-xs font-semibold text-[#638174] underline underline-offset-2">Powered by alphaTab</a>
     </div>
   </div>
 </template>
