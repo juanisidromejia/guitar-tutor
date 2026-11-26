@@ -52,7 +52,7 @@ function play() {
     playing.value = false
     activeUnit.value = -1
     stopPlayback = null
-  })
+  }, stage.value === 0)
 }
 function stop() {
   stopPlayback?.()
@@ -119,8 +119,8 @@ onUnmounted(stop)
           </div>
         </div>
         <h3 class="mt-6 font-extrabold">Y estos son sus silencios</h3>
-        <div class="mt-3 grid grid-cols-3 gap-3">
-          <div v-for="rest in [{symbol:'𝄼',name:'Silencio de blanca',value:'2 pulsos'},{symbol:'𝄽',name:'Silencio de negra',value:'1 pulso'},{symbol:'𝄾',name:'Silencio de corchea',value:'½ pulso'}]" :key="rest.name" class="rounded-2xl bg-[#f3f7f3] p-3 text-center">
+        <div class="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div v-for="rest in [{symbol:'𝄻',name:'Silencio de redonda',value:'4 pulsos'},{symbol:'𝄼',name:'Silencio de blanca',value:'2 pulsos'},{symbol:'𝄽',name:'Silencio de negra',value:'1 pulso'},{symbol:'𝄾',name:'Silencio de corchea',value:'½ pulso'}]" :key="rest.name" class="rounded-2xl bg-[#f3f7f3] p-3 text-center">
             <div class="text-3xl">{{rest.symbol}}</div><p class="mt-2 text-xs font-bold">{{rest.name}}</p><p class="mt-1 text-xs text-[#7a8980]">{{rest.value}}</p>
           </div>
         </div>

@@ -23,34 +23,60 @@ function click(time: number, accented: boolean) {
   oscillator.stop(time + 0.06)
 }
 
-/** Reproduce un patrón con clic de metrónomo y golpes de percusión suaves. */
+/** Reproduce un patrón; puede repetirlo hasta que el usuario lo detenga. */
 export function playRhythm(
   events: RhythmEvent[],
   bpm: number,
   beatsPerBar: number,
   onPosition: (eighthIndex: number) => void,
   onEnd: () => void,
+  loop = false,
 ) {
   const audio = getContext()
   const secondsPerEighth = 30 / bpm
   const totalUnits = events.reduce((sum, event) => sum + event.units, 0)
-  const start = audio.currentTime + 0.08
+  const barDuration = totalUnits * secondsPerEighth
   const timers: number[] = []
+  let stopped = false
 
-  for (let beat = 0; beat < beatsPerBar; beat++) {
-    click(start + beat * secondsPerEighth * 2, beat === 0)
+  function scheduleBar() {
+    if (stopped) return
+    const start = audio.currentTime + 0.08
+
+    for (let beat = 0; beat < beatsPerBar; beat++) {
+      click(start + beat * secondsPerEighth * 2, beat === 0)
+    }
+
+    let position = 0
+    for (const event of events) {
+      if (!event.rest) click(start + position * secondsPerEighth, false)
+      position += event.units
+    }
+
+    for (let unit = 0; unit < totalUnits; unit++) {
+      timers.push(window.setTimeout(() => {
+        if (!stopped) onPosition(unit)
+      }, 80 + unit * secondsPerEighth * 1000))
+    }
+
+    if (loop) {
+      timers.push(window.setTimeout(() => {
+        if (!stopped) {
+          onPosition(-1)
+          scheduleBar()
+        }
+      }, barDuration * 1000))
+    } else {
+      timers.push(window.setTimeout(() => {
+        if (!stopped) onEnd()
+      }, 100 + barDuration * 1000))
+    }
   }
 
-  let position = 0
-  for (const event of events) {
-    if (!event.rest) click(start + position * secondsPerEighth, false)
-    position += event.units
-  }
+  scheduleBar()
 
-  for (let unit = 0; unit < totalUnits; unit++) {
-    timers.push(window.setTimeout(() => onPosition(unit), 80 + unit * secondsPerEighth * 1000))
+  return () => {
+    stopped = true
+    timers.forEach(window.clearTimeout)
   }
-  timers.push(window.setTimeout(onEnd, 100 + totalUnits * secondsPerEighth * 1000))
-
-  return () => timers.forEach(window.clearTimeout)
 }
