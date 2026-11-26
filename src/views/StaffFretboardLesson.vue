@@ -5,6 +5,7 @@ import { RouterLink } from 'vue-router'
 import GuitarFretboard from '../components/GuitarFretboard.vue'
 import StaffNote from '../components/StaffNote.vue'
 import { fretMidi } from '../engines/guitar/fretboard'
+import { playGuitarNote } from '../engines/audio/guitarSound'
 import { useProgress } from '../composables/useProgress'
 
 const { record, complete } = useProgress()
@@ -24,6 +25,7 @@ function next() {
 function choose(position: { string: number; fret: number; midi: number }) {
   if (feedback.value === 'correct') return
   selected.value = position
+  void playGuitarNote(position.midi, position.string)
   const soundingMidi = target.value - 12
   const isCorrect = fretMidi(position.string, position.fret) === soundingMidi
   record(isCorrect)
