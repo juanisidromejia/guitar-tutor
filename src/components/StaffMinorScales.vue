@@ -153,6 +153,11 @@ start()
         </table>
       </div>
       <p class="mt-2 text-[10px] text-[#829087]">T = tono (2 semitonos) · S = semitono · 3S = tres semitonos.</p>
+      <div v-if="selected === 'melodic'" class="mt-3 rounded-lg bg-[#edf4ee] p-3">
+        <p class="text-xs font-black text-[#426c5b]">Descenso en la forma clásica</p>
+        <p class="mt-1 text-sm font-bold tracking-wide text-[#365c4c]">La – Sol – Fa – Mi – Re – Do – Si – La</p>
+        <p class="mt-1 text-[10px] leading-4 text-[#718078]">Al descender se utilizan el sexto y el séptimo grado naturales. En el enfoque moderno de menor melódica (jazz), suele conservarse la misma forma ascendente en ambas direcciones.</p>
+      </div>
 
       <div class="mt-3 rounded-lg bg-[#f7f4ed] p-3">
         <p class="text-xs font-black text-[#426c5b]">¿Qué debes escuchar y reconocer?</p>
