@@ -112,7 +112,7 @@ const selectedLabel = computed(() => {
               :cx="fretCenterX(fret)"
               :cy="stringY(index)"
               r="13"
-              :fill="isCompleted(string, fret) ? '#176b5b' : '#c07832'"
+              fill="#176b5b"
               stroke="white"
               stroke-width="2"
             />
