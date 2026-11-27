@@ -35,6 +35,10 @@ function selectString(string: typeof strings[number]) {
   void playGuitarNote(string.midi, string.number)
 }
 
+function playNaturalNote(midi: number, string: number) {
+  void playGuitarNote(midi, string)
+}
+
 function selectFret(fret: number) {
   selectedFret.value = fret
   if (!visitedFrets.value.includes(fret)) visitedFrets.value.push(fret)
@@ -140,7 +144,36 @@ function selectFret(fret: number) {
         </div>
       </div>
 
-      <div class="mt-3 grid gap-2 sm:grid-cols-2">
+      <section class="panel mt-4 p-3 sm:p-4">
+      <div class="mb-3">
+        <p class="eyebrow">Exploración guiada · Primera posición</p>
+        <h2 class="text-lg font-black">Conoce las notas naturales</h2>
+        <p class="mt-1 text-sm leading-5 text-[#788780]">
+          Ahora observa cómo aparecen las notas naturales en las seis cuerdas, desde el sonido al aire hasta el tercer traste. Pulsa cada nota para escucharla.
+        </p>
+      </div>
+      <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+        <div v-for="string in naturalNotesByString" :key="string.number" class="rounded-xl bg-[#f7f4ed] p-3">
+          <p class="mb-2 text-xs font-extrabold uppercase tracking-wide text-[#8a795f]">Cuerda {{ string.number }} · {{ string.name }} al aire</p>
+          <div class="flex flex-wrap gap-2">
+            <button
+              v-for="item in string.notes"
+              :key="item.fret"
+              class="min-w-[64px] flex-1 rounded-lg bg-white px-2 py-2 text-center transition hover:bg-[#dcebe0] active:scale-95"
+              @click="playNaturalNote(item.midi, string.number)"
+            >
+              <span class="block text-lg font-black text-[#176b5b]">{{ item.note.name }}</span>
+              <span class="block text-[10px] text-[#788780]">{{ item.fret === 0 ? 'Al aire' : 'Traste ' + item.fret }}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+      <p class="mt-3 rounded-lg bg-[#edf4ee] p-3 text-xs leading-5 text-[#567267]">
+        Algunas posiciones se omiten porque producen notas alteradas, como sostenidos. Primero aprenderás las notas naturales; después estudiaremos esas notas intermedias y sus distintas formas de escritura.
+      </p>
+    </section>
+
+    <div class="mt-3 grid gap-2 sm:grid-cols-2">
         <div class="rounded-xl bg-[#edf4ee] p-3 text-xs leading-5 text-[#567267]">
           <b>Un traste = un semitono.</b>
           Cada vez que avanzas un traste, la nota sube un semitono. Mi–Fa es un semitono; Fa–Sol son dos.
