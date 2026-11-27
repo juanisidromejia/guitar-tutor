@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { CheckCircle2, XCircle } from 'lucide-vue-next'
-import StaffNote from './StaffNote.vue'
 import { playGuitarNote } from '../engines/audio/guitarSound'
 
 type KeyExample = 'C' | 'G' | 'F'
@@ -43,8 +42,8 @@ const examples = {
     noteName: 'Si bemol',
     writtenMidi: 70,
     soundingMidi: 58,
-    string: 2,
-    fret: 1,
+    string: 3,
+    fret: 3,
     explanation: 'La armadura coloca un bemol en Si. Por eso, aunque no veas un ♭ junto a cada Si, debes tocar Si bemol.',
   },
 } as const
