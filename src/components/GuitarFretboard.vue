@@ -12,11 +12,12 @@ interface FretPosition {
 const props = withDefaults(
   defineProps<{
     selected: { string: number; fret: number } | null
+    completedPositions?: { string: number; fret: number }[]
     disabled?: boolean
     startFret?: number
     endFret?: number
   }>(),
-  { selected: null, disabled: false, startFret: 0, endFret: 5 },
+  { selected: null, completedPositions: () => [], disabled: false, startFret: 0, endFret: 5 },
 )
 
 const emit = defineEmits<{
@@ -47,6 +48,10 @@ const fretHitboxX = (fret: number) => fret === 0 ? 25 : fretCenterX(fret) - 55
 const fretHitboxWidth = (fret: number) => fret === 0 ? 26 : 110
 const stringWidth = (string: number) => string === 1 || string === 6 ? 2.8 : 1.6
 const markerFrets = [3, 5, 7, 9, 12, 15, 17, 19, 21, 24]
+
+function isCompleted(string: number, fret: number) {
+  return props.completedPositions.some(position => position.string === string && position.fret === fret)
+}
 
 function isSelected(string: number, fret: number) {
   return props.selected !== null
@@ -103,11 +108,11 @@ const selectedLabel = computed(() => {
 
           <g v-for="fret in frets" :key="fret">
             <circle
-              v-if="isSelected(string, fret)"
+              v-if="isSelected(string, fret) || isCompleted(string, fret)"
               :cx="fretCenterX(fret)"
               :cy="stringY(index)"
               r="13"
-              fill="#176b5b"
+              :fill="isCompleted(string, fret) ? '#176b5b' : '#c07832'"
               stroke="white"
               stroke-width="2"
             />
