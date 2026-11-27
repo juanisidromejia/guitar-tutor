@@ -115,6 +115,7 @@ La primera lección conserva la exploración auditiva de las seis cuerdas al air
 - En la primera cuerda recorre Mi, Fa, Fa♯ y Sol en los trastes 0–3.
 - Se explica que cada traste consecutivo equivale a un semitono y que dos semitonos forman un tono.
 - Se destaca la distancia natural Mi–Fa (semitono) frente a Fa–Sol (tono), introduciendo Fa♯ como altura intermedia sin exigir todavía el dominio de la notación cromática.
+- Se añade una exploración auditiva de las notas naturales disponibles en cada cuerda entre el sonido al aire y el tercer traste; las posiciones cromáticas se reservan para una lección posterior.
 - La lección se marca completada después de explorar las seis cuerdas y las cuatro posiciones de la primera cuerda.
 
 La siguiente ampliación pedagógica será una secuencia guiada de notas naturales en primera posición, antes de introducir sostenidos, bemoles y enarmonía. El módulo de identificación de notas en el diapasón permanece separado como práctica configurable por nivel y región.
