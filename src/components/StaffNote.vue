@@ -37,6 +37,7 @@ const ledgerLines = computed(() => {
       lines.push(75 - (step - 38) * 9)
     }
   }
+  return lines
 })
 </script>
 
