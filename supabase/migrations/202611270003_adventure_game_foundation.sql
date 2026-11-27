@@ -187,12 +187,17 @@ begin
  (v_game.id,3,'beginner','e-scale-b','¿Cuál de estas notas está alterada en Mi mayor?','["Fa♯","La","Si","Mi"]'::jsonb,'Fa♯','Mi mayor contiene cuatro sostenidos, incluido Fa♯.'),
  (v_game.id,4,'beginner','g-chord-a','¿Qué notas forman la tríada de Sol mayor?','["Sol–Si–Re","Sol–Si♭–Re","Sol–Do–Mi","Sol–La–Re"]'::jsonb,'Sol–Si–Re','Sol mayor se forma con fundamental, tercera mayor y quinta justa.'),
  (v_game.id,4,'beginner','g-chord-b','¿Cuál es el acorde mayor construido sobre la nota Sol?','["Sol–Si–Re","Sol–Si♭–Re","Sol–Do–Re","Sol–La–Do"]'::jsonb,'Sol–Si–Re','La tríada mayor de Sol contiene Sol, Si y Re.');
- if p_difficulty<>'beginner' then
-  update public.adventure_challenges set difficulty='intermediate' where game_id=v_game.id and difficulty='beginner';
- end if;
- if p_difficulty='advanced' then
-  update public.adventure_challenges set difficulty='advanced' where game_id=v_game.id;
- end if;
+ (v_game.id,0,'intermediate','g-scale-c','¿Qué grado de la escala de Sol mayor es Fa♯?','["Cuarto","Quinto","Sexto","Séptimo"]'::jsonb,'Séptimo','Fa♯ es el séptimo grado de Sol mayor.'),
+ (v_game.id,0,'advanced','g-scale-d','¿Qué intervalo separa Mi de Fa♯ en Sol mayor?','["Segunda mayor","Tercera menor","Segunda menor","Tercera mayor"]'::jsonb,'Segunda mayor','Mi–Fa♯ es una segunda mayor.'),
+ (v_game.id,1,'intermediate','g-notes-c','¿Qué nota ocupa el sexto grado de Sol mayor?','["Do","Re","Mi","Fa♯"]'::jsonb,'Mi','Los grados son Sol, La, Si, Do, Re, Mi y Fa♯.'),
+ (v_game.id,1,'advanced','g-notes-d','¿Qué intervalo hay entre Sol y Fa♯ dentro de la escala?','["Séptima mayor","Séptima menor","Octava justa","Sexta mayor"]'::jsonb,'Séptima mayor','Sol–Fa♯ forma una séptima mayor.'),
+ (v_game.id,2,'intermediate','c-scale-c','¿Qué grado de Do mayor corresponde a la nota La?','["Quinto","Sexto","Séptimo","Cuarto"]'::jsonb,'Sexto','La es el sexto grado de Do mayor.'),
+ (v_game.id,2,'advanced','c-scale-d','¿Qué intervalo hay entre Si y Do en la escala de Do mayor?','["Segunda mayor","Segunda menor","Tercera menor","Unísono"]'::jsonb,'Segunda menor','Entre Si y Do hay un semitono: segunda menor.'),
+ (v_game.id,3,'intermediate','e-scale-c','¿Cuáles son las cuatro alteraciones de Mi mayor?','["Fa♯, Do♯, Sol♯, Re♯","Fa♯, Do♯, Sol♯, La♯","Si♭, Mi♭, La♭, Re♭","Fa♯, Sol♯, La♯, Mi♯"]'::jsonb,'Fa♯, Do♯, Sol♯, Re♯','Mi mayor tiene cuatro sostenidos.'),
+ (v_game.id,3,'advanced','e-scale-d','¿Qué tonalidad menor comparte armadura con Mi mayor?','["Do♯ menor","La menor","Fa♯ menor","Si menor"]'::jsonb,'Do♯ menor','Do♯ menor es la relativa menor de Mi mayor.'),
+ (v_game.id,4,'intermediate','g-chord-c','¿Qué intervalo hay entre Si y Re en la tríada de Sol mayor?','["Tercera mayor","Tercera menor","Cuarta justa","Quinta justa"]'::jsonb,'Tercera menor','Si–Re es una tercera menor; Sol–Si es la tercera mayor del acorde.'),
+ (v_game.id,4,'advanced','g-chord-d','¿Qué inversión de Sol mayor tiene Si en el bajo?','["Estado fundamental","Primera inversión","Segunda inversión","No es una inversión posible"]'::jsonb,'Primera inversión','La primera inversión coloca la tercera del acorde, Si, en el bajo.');
+
  insert into public.adventure_treasures(game_id) values(v_game.id);
  insert into public.adventure_events(game_id,event_type,message) values(v_game.id,'game_created','Se han abierto las puertas de las Catacumbas de la Guitarra.');
  return jsonb_build_object('id',v_game.id,'code',v_game.code,'title',v_game.title,'status',v_game.status,'difficulty',v_game.difficulty,'created_at',v_game.created_at);
@@ -209,7 +214,7 @@ begin
  if not found or v_game.status='finished' then raise exception 'La partida no existe o ya terminó.'; end if;
  select * into v_player from public.adventure_players where game_id=v_game.id and user_id=auth.uid();
  if not found then
-  select * into v_challenge from public.adventure_challenges where game_id=v_game.id and room_index=0 order by random() limit 1;
+  select * into v_challenge from public.adventure_challenges where game_id=v_game.id and room_index=0 and (v_game.difficulty='mixed' or difficulty=v_game.difficulty) order by random() limit 1;
   insert into public.adventure_players(game_id,user_id,nickname,challenge_id) values(v_game.id,auth.uid(),trim(p_nickname),v_challenge.id) returning * into v_player;
   insert into public.adventure_events(game_id,actor_player_id,event_type,message) values(v_game.id,v_player.id,'player_joined',v_player.nickname||' se ha unido a la expedición.');
  else
@@ -246,7 +251,7 @@ begin
  if v_correct then
   update public.adventure_players set room_index=room_index+1,challenge_id=null,last_seen_at=now() where id=v_player.id returning * into v_player;
   if v_player.room_index<5 then
-   select * into v_next from public.adventure_challenges where game_id=p_game_id and room_index=v_player.room_index order by random() limit 1;
+   select * into v_next from public.adventure_challenges where game_id=p_game_id and room_index=v_player.room_index and (v_game.difficulty='mixed' or difficulty=v_game.difficulty) order by random() limit 1;
    update public.adventure_players set challenge_id=v_next.id where id=v_player.id returning * into v_player;
    v_message:='¡Correcto! Has abierto la puerta y avanzas a la siguiente sala.';
   else
