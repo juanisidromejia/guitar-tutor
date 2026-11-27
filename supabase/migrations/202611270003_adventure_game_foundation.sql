@@ -299,7 +299,7 @@ begin
  if v_player.last_seen_at < now()-interval '3 minutes' and not v_player.eliminated then
   update public.adventure_players set eliminated=true,errors=3,disconnected_at=now() where id=v_player.id;
   insert into public.adventure_events(game_id,actor_player_id,event_type,message) values(p_game_id,v_player.id,'reconnect_expired',v_player.nickname||' perdió la conexión durante más de tres minutos y quedó fuera de la expedición.');
-  raise exception 'Se agotó el tiempo de reconexión de tres minutos.';
+  return;
  end if;
  update public.adventure_players set last_seen_at=now(),disconnected_at=null where id=v_player.id;
 end $;
