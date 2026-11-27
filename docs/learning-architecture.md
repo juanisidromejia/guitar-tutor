@@ -105,3 +105,16 @@ Los formatos reutilizan visualizadores existentes: pentagrama, diapasón, audio,
 2. Ampliar el banco de preguntas con etiquetas de nivel, área, tema y prerrequisitos.
 3. Incorporar armonía y reconocimiento de acordes reutilizando el modelo de notas.
 4. Ampliar ritmo y lectura con los motores existentes.
+
+
+## Secuencia inicial «Las seis cuerdas»
+
+La primera lección conserva la exploración auditiva de las seis cuerdas al aire y añade una experiencia interactiva sobre la altura de las notas:
+
+- El estudiante escucha y reconoce las seis cuerdas al aire.
+- En la primera cuerda recorre Mi, Fa, Fa♯ y Sol en los trastes 0–3.
+- Se explica que cada traste consecutivo equivale a un semitono y que dos semitonos forman un tono.
+- Se destaca la distancia natural Mi–Fa (semitono) frente a Fa–Sol (tono), introduciendo Fa♯ como altura intermedia sin exigir todavía el dominio de la notación cromática.
+- La lección se marca completada después de explorar las seis cuerdas y las cuatro posiciones de la primera cuerda.
+
+La siguiente ampliación pedagógica será una secuencia guiada de notas naturales en primera posición, antes de introducir sostenidos, bemoles y enarmonía. El módulo de identificación de notas en el diapasón permanece separado como práctica configurable por nivel y región.
