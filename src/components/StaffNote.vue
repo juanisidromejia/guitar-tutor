@@ -8,6 +8,8 @@ const props = defineProps<{
   midi: number
   /** Grafía musical opcional. Permite distinguir, por ejemplo, Do♯ de Re♭. */
   spelling?: SpelledNote
+  /** Controla el signo visible cuando una alteración ya está vigente en el compás. */
+  accidentalDisplay?: 'auto' | 'sharp' | 'flat' | 'natural' | 'none'
 }>()
 
 const note = computed(() =>
@@ -19,6 +21,10 @@ const letterIndex = computed(() => ['Do', 'Re', 'Mi', 'Fa', 'Sol', 'La', 'Si'].i
 const diatonicStep = computed(() => note.value.octave * 7 + letterIndex.value)
 const y = computed(() => 147 - (diatonicStep.value - 30) * 9)
 const accidentalSymbol = computed(() => {
+  if (props.accidentalDisplay === 'none') return ''
+  if (props.accidentalDisplay === 'sharp') return '♯'
+  if (props.accidentalDisplay === 'flat') return '♭'
+  if (props.accidentalDisplay === 'natural') return '♮'
   switch (note.value.accidental) {
     case 1: return '♯'
     case -1: return '♭'
