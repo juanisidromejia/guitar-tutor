@@ -25,6 +25,7 @@ import StaffMelodyReading from '../components/StaffMelodyReading.vue'
       </p>
     </div>
 
+    <StaffMelodyReading />
     <StaffAccidentalsIntro />
     <StaffMeasureAccidentals />
     <StaffAccidentalMelody />
@@ -38,6 +39,5 @@ import StaffMelodyReading from '../components/StaffMelodyReading.vue'
     <StaffIntervals />
     <StaffTriads />
     <StaffTriadInversions />
-    <StaffMelodyReading />
   </div>
 </template>
