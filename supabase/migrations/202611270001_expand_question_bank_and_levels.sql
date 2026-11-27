@@ -21,8 +21,8 @@ insert into public.class_question_bank
 values
 -- BEGINNER: 20 questions total (the original 12 plus these 8).
 (13,'beginner','Pentagrama','¿Qué nota se escribe en el primer espacio del pentagrama en clave de sol?','["Do4","Fa4","La4","Do5"]'::jsonb,'Fa4','En clave de sol, el primer espacio desde abajo corresponde a Fa4.',65),
-(14,'beginner','Pentagrama','¿Qué nota se escribe en la segunda línea del pentagrama en clave de sol?','["Mi4","Sol4","Si4","Re5"]'::jsonb,'Sol4','Las líneas desde abajo son Mi4, Sol4, Si4, Re5 y Fa5.',67),
-(15,'beginner','Pentagrama','¿Qué nota se escribe en el espacio inmediatamente encima de la primera línea?','["Fa4","Sol4","La4","Do5"]'::jsonb,'Fa4','El primer espacio del pentagrama es Fa4.',65),
+(14,'beginner','Pentagrama','¿Qué nota se escribe en la cuarta línea del pentagrama en clave de sol?','["Mi4","Sol4","Si4","Re5"]'::jsonb,'Re5','Las líneas desde abajo son Mi4, Sol4, Si4, Re5 y Fa5.',74),
+(15,'beginner','Pentagrama','¿Qué nota se escribe en el segundo espacio del pentagrama en clave de sol?','["Fa4","Sol4","La4","Do5"]'::jsonb,'La4','Los espacios desde abajo son Fa4, La4, Do5 y Mi5.',69),
 (16,'beginner','Diapasón','¿Qué nota produce la primera cuerda al aire de la guitarra?','["Mi4","La3","Re3","Sol3"]'::jsonb,'Mi4','En afinación estándar, la primera cuerda al aire produce Mi4.',null),
 (17,'beginner','Diapasón','¿Qué nota produce la sexta cuerda al aire?','["Mi2","La2","Re3","Sol2"]'::jsonb,'Mi2','La sexta cuerda al aire produce Mi2.',null),
 (18,'beginner','Diapasón','Si avanzas un traste en la misma cuerda, ¿qué ocurre con la altura?','["Sube un semitono","Sube un tono","Baja un semitono","No cambia"]'::jsonb,'Sube un semitono','Cada traste consecutivo aumenta la altura un semitono.',null),
