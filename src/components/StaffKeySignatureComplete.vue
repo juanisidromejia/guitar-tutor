@@ -111,7 +111,7 @@ const quiz = [
   },
   {
     id: 'q3',
-    prompt: '¿Qué nota suena en la guitarra al tocar Fa♭4 escrito?',
+    prompt: '¿Qué nota suena en la guitarra al tocar Fa♭5 escrito?',
     options: [{ value: 'a', label: 'Mi4' }, { value: 'b', label: 'Fa4' }],
     correct: 'a',
     explanation: 'Fa bemol es enarmónico de Mi natural; en la primera cuerda al aire suena Mi4.',
@@ -163,9 +163,9 @@ function playExample() {
       <div class="mt-3 grid items-center gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
         <div class="rounded-xl bg-[#f7f4ed] p-2">
           <p class="text-center text-[10px] font-bold uppercase tracking-wide text-[#718078]">Armadura seleccionada</p>
-          <svg viewBox="0 0 350 145" class="mx-auto block w-full max-w-[340px]" role="img" :aria-label="`Clave de sol y armadura de ${current.name}: ${current.signature}`">
+          <svg viewBox="0 0 370 145" class="mx-auto block w-full max-w-[360px]" role="img" :aria-label="`Clave de sol y armadura de ${current.name}: ${current.signature}`">
             <g stroke="#89958e" stroke-width="1.3">
-              <path v-for="i in 5" :key="i" :d="`M 12 ${45 + (i - 1) * 18} H 340`" />
+              <path v-for="i in 5" :key="i" :d="`M 12 ${45 + (i - 1) * 18} H 360`" />
             </g>
             <text x="18" y="112" font-size="66" fill="#176b5b">𝄞</text>
             <text
