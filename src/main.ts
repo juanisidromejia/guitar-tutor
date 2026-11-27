@@ -12,6 +12,7 @@ import RhythmReading from './views/RhythmReadingView.vue'
 import Assessment from './views/AssessmentView.vue'
 import Sessions from './views/SessionsView.vue'
 import JoinSession from './views/JoinSessionView.vue'
+import AdventureGame from './views/AdventureGameView.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -27,6 +28,7 @@ const router = createRouter({
     { path: '/docente/sesiones', component: Sessions },
     { path: '/unirse', component: JoinSession },
     { path: '/sesion/:code', component: JoinSession },
+    { path: '/aventura', component: AdventureGame },
     { path: '/:pathMatch(.*)*', redirect: '/' },
   ],
   scrollBehavior: () => ({ top: 0 }),
