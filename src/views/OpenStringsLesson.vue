@@ -24,16 +24,21 @@ const fretNote = computed(() => midiName(strings[0].midi + selectedFret.value))
 const note = computed(() => midiName(selectedString.value.midi))
 const writtenNote = computed(() => midiName(selectedString.value.midi + 12))
 
+function maybeComplete() {
+  if (visited.value.length === strings.length && [0, 1, 2, 3].every(value => visitedFrets.value.includes(value))) complete(1)
+}
+
 function selectString(string: typeof strings[number]) {
   selected.value = string
   if (!visited.value.includes(string.number)) visited.value.push(string.number)
+  maybeComplete()
   void playGuitarNote(string.midi, string.number)
 }
 
 function selectFret(fret: number) {
   selectedFret.value = fret
   if (!visitedFrets.value.includes(fret)) visitedFrets.value.push(fret)
-  if (visited.value.length === strings.length && [0, 1, 2, 3].every(value => visitedFrets.value.includes(value))) complete(1)
+  maybeComplete()
   void playGuitarNote(strings[0].midi + fret, 1)
 }
 
