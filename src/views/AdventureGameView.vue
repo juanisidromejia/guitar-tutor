@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { onMounted, onUnmounted, ref } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 import { ArrowLeft, BookOpen, CheckCircle2, Clock3, Gem, Heart, LogOut, RefreshCw, ShieldAlert, Skull, Sparkles, Swords, Users } from 'lucide-vue-next'
 import { isSupabaseConfigured, requireSupabase } from '../services/supabase'
