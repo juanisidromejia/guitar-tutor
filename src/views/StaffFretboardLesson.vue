@@ -6,6 +6,7 @@ import StaffNote from '../components/StaffNote.vue'
 import StaffAccidentalsIntro from '../components/StaffAccidentalsIntro.vue'
 import StaffMeasureAccidentals from '../components/StaffMeasureAccidentals.vue'
 import StaffAccidentalMelody from '../components/StaffAccidentalMelody.vue'
+import StaffKeySignatureIntro from '../components/StaffKeySignatureIntro.vue'
 import { fretMidi } from '../engines/guitar/fretboard'
 import { playGuitarNote } from '../engines/audio/guitarSound'
 import { useProgress } from '../composables/useProgress'
@@ -91,6 +92,7 @@ function choose(position: { string: number; fret: number; midi: number }) {
     <StaffAccidentalsIntro />
     <StaffMeasureAccidentals />
     <StaffAccidentalMelody />
+    <StaffKeySignatureIntro />
 
     <section class="panel p-3 sm:p-4">
       <div class="mb-3 grid gap-2 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)] sm:items-end">
