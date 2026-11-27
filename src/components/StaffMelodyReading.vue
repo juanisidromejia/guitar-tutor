@@ -10,9 +10,9 @@ type Position = { string: number; fret: number; midi: number }
 // Primera frase de «Estrellita, ¿dónde estás?» en Do mayor.
 // El pentagrama muestra la escritura para guitarra (una octava arriba).
 const melody = [72, 72, 79, 79, 81, 81, 79, 77, 77, 76, 76, 74, 74, 72]
-const noteX = [70, 100, 130, 160, 225, 255, 285, 350, 380, 410, 440, 505, 535, 565]
+const noteX = [125, 155, 185, 215, 280, 310, 340, 405, 435, 465, 495, 560, 590, 620]
 const halfNotes = [6, 13]
-const barLines = [190, 315, 470, 595]
+const barLines = [245, 370, 525, 650]
 const noteY: Record<number, number> = {
   72: 72.5, // Do5
   74: 65,   // Re5
@@ -99,9 +99,9 @@ onBeforeUnmount(() => {
       </div>
 
       <div class="mt-2 overflow-x-auto rounded-lg bg-[#fbfaf6] p-2">
-        <svg viewBox="0 0 640 150" class="mx-auto block w-full min-w-[490px] max-w-[700px]" role="img" aria-label="Melodía Estrellita en clave de sol">
+        <svg viewBox="0 0 700 150" class="mx-auto block w-full min-w-[490px] max-w-[700px]" role="img" aria-label="Melodía Estrellita en clave de sol">
           <g stroke="#89958e" stroke-width="1.2">
-            <path v-for="line in 5" :key="line" :d="'M 20 ' + (50 + (line - 1) * 15) + ' H 620'" />
+            <path v-for="line in 5" :key="line" :d="'M 20 ' + (50 + (line - 1) * 15) + ' H 680'" />
           </g>
           <text x="27" y="112" font-size="72" fill="#176b5b">𝄞</text>
           <g stroke="#89958e" stroke-width="1.5">
