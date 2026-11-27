@@ -4,6 +4,7 @@
 
 update public.class_question_bank
 set
+  prompt = '¿Qué nota suena realmente en la guitarra según la nota escrita en el pentagrama?',
   options = case id
     when 1 then '["Do3","Mi3","Sol3","La3"]'::jsonb
     when 2 then '["Re3","Fa3","Sol3","Si3"]'::jsonb
