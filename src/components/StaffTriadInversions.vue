@@ -73,9 +73,9 @@ function noteX(fret: number) { return fret === 0 ? 58 : 77 + (fret - 1) * 90 }
       <p class="mt-1 text-sm leading-5 text-[#788780]">Una inversión cambia qué nota del acorde queda en el bajo. Las notas siguen siendo las mismas; cambia su orden.</p>
     </div>
     <div class="grid gap-2 sm:grid-cols-3">
-      <div class="rounded-xl bg-[#edf4ee] p-3"><p class="text-xs font-black text-[#426c5b]">Estado fundamental</p><p class="mt-1 text-sm font-bold text-[#365c4c]">1 – 3 – 5</p><p class="mt-1 text-[11px] text-[#567267]">La fundamental está en el bajo.</p></div>
-      <div class="rounded-xl bg-[#edf4ee] p-3"><p class="text-xs font-black text-[#426c5b]">Primera inversión</p><p class="mt-1 text-sm font-bold text-[#365c4c]">3 – 5 – 1</p><p class="mt-1 text-[11px] text-[#567267]">La tercera está en el bajo.</p></div>
-      <div class="rounded-xl bg-[#edf4ee] p-3"><p class="text-xs font-black text-[#426c5b]">Segunda inversión</p><p class="mt-1 text-sm font-bold text-[#365c4c]">5 – 1 – 3</p><p class="mt-1 text-[11px] text-[#567267]">La quinta está en el bajo.</p></div>
+      <div class="rounded-xl bg-[#edf4ee] p-3"><p class="text-xs font-black text-[#426c5b]">Estado fundamental</p><p class="mt-1 text-sm font-bold text-[#365c4c]">1 en el bajo</p><p class="mt-1 text-[11px] text-[#567267]">La fundamental está en el bajo.</p></div>
+      <div class="rounded-xl bg-[#edf4ee] p-3"><p class="text-xs font-black text-[#426c5b]">Primera inversión</p><p class="mt-1 text-sm font-bold text-[#365c4c]">3 en el bajo</p><p class="mt-1 text-[11px] text-[#567267]">La tercera está en el bajo.</p></div>
+      <div class="rounded-xl bg-[#edf4ee] p-3"><p class="text-xs font-black text-[#426c5b]">Segunda inversión</p><p class="mt-1 text-sm font-bold text-[#365c4c]">5 en el bajo</p><p class="mt-1 text-[11px] text-[#567267]">La quinta está en el bajo.</p></div>
     </div>
 
     <div class="mt-3 rounded-xl border border-[#dce7df] p-3">
