@@ -1,1 +1,21 @@
+export {
+  buildTriad,
+  formatSpelledNote,
+  midiToNote,
+  noteToMidi,
+  parseNoteName,
+  pitchClass,
+  pitchClassDistance,
+  respellNote,
+} from './musicTheory'
+
+export type {
+  Accidental,
+  MusicalNote,
+  NoteLetter,
+  NoteSpellingPreference,
+  SpelledNote,
+  TriadQuality,
+} from './musicTheory'
+
 export {\n  buildTriad,\n  formatSpelledNote,\n  midiToNote,\n  noteToMidi,\n  parseNoteName,\n  pitchClass,\n  pitchClassDistance,\n  respellNote,\n} from './musicTheory'\n\nexport type {\n  Accidental,\n  MusicalNote,\n  NoteLetter,\n  NoteSpellingPreference,\n  SpelledNote,\n  TriadQuality,\n} from './musicTheory'\n\nexport const OPEN_MIDI=[40,45,50,55,59,64] as const;const NAMES=['Do','Do♯','Re','Re♯','Mi','Fa','Fa♯','Sol','Sol♯','La','La♯','Si'];export function midiName(m:number){return{name:NAMES[((m%12)+12)%12],octave:Math.floor(m/12)-1}}export function midiHz(m:number){return 440*2**((m-69)/12)}
