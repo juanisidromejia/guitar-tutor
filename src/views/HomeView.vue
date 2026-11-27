@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ArrowRight, CheckCircle2, Music2, Sparkles, Users } from 'lucide-vue-next'
+import { ArrowRight, CheckCircle2, Music2, Sparkles, Users, Castle } from 'lucide-vue-next'
 import { RouterLink } from 'vue-router'
 import { useProgress } from '../composables/useProgress'
 const { data, accuracy } = useProgress()
@@ -10,6 +10,7 @@ const modules = [
   { id: '04', title: 'Lectura rítmica', description: 'Comprende el pulso, las figuras, los silencios y los primeros patrones rítmicos.', tag: 'Ritmo y lectura', to: '/lectura-ritmica' },
   { id: '05', title: 'Del papel a la guitarra', description: 'Lee pequeñas frases musicales y tócalas en el instrumento.', tag: 'Lectura e interpretación', to: '/del-papel-a-la-guitarra', progressId: 4 },
   { id: '06', title: 'Pruebas y evaluaciones', description: 'Comprueba tus conocimientos de pentagrama, diapasón y ritmo.', tag: 'Evaluación', to: '/evaluacion' },
+  { id: '07', title: 'Catacumbas de la guitarra', description: 'Resuelve acertijos musicales, avanza por salas y compite por el tesoro.', tag: 'Aventura multijugador', to: '/aventura' },
 ]
 </script>
 <template>
