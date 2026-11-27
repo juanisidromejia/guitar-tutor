@@ -35,7 +35,7 @@ const questionBank = computed<Question[]>(() => {
   for (const signature of signatures) {
     const label = signature.count === 0
       ? 'ninguna alteración'
-      : `${signature.count} ${signature.family}`
+      : `${signature.count} ${signature.count === 1 ? (signature.family === 'sostenidos' ? 'sostenido' : 'bemol') : signature.family}`
     const countOptions = signature.count === 0
       ? ['0', '1', '2', '3']
       : shuffle([String(signature.count), ...shuffle(Array.from({ length: 8 }, (_, value) => String(value)).filter(value => value !== String(signature.count))).slice(0, 3)])
