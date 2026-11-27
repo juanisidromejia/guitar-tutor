@@ -86,7 +86,7 @@ Los formatos reutilizan visualizadores existentes: pentagrama, diapasón, audio,
 - `StaffNote.vue` acepta una grafía explícita mediante `spelling`, sin romper los usos existentes que solo proporcionan `midi`.
 - La lección de relación pentagrama–diapasón utiliza la región principiante 1–5.
 - Se conserva la vista anterior de cuerdas al aire y trastes 1–5 como valor predeterminado para mantener compatibilidad.
-- No se altera el comportamiento de `StaffNote.vue`.
+- Se mantiene la compatibilidad de los usos existentes de `StaffNote.vue`; la nueva propiedad `spelling` es opcional.
 - No se reemplazan las 12 preguntas actuales.
 - No se modifica el esquema Supabase ni las migraciones de sesiones.
 - No se cambia la navegación ni el diseño de módulos existentes.
