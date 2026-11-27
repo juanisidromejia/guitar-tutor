@@ -22,6 +22,9 @@ const selectedFret = ref(0)
 const visitedFrets = ref<number[]>([])
 const visitedNaturalNotes = ref<string[]>([])
 const selectedNaturalNote = ref<{ key: string; midi: number; stringNumber: number; stringName: string; fret: number; name: string } | null>(null)
+const visitedAlteredNotes = ref<string[]>([])
+const selectedAlteredNote = ref<{ key: string; spelling: string; midi: number; stringNumber: number; fret: number } | null>(null)
+const quizAnswer = ref('')
 const totalNaturalNotes = computed(() => naturalNotesByString.value.reduce((total, string) => total + string.notes.length, 0))
 const fretNote = computed(() => midiName(strings[0].midi + selectedFret.value))
 const note = computed(() => midiName(selectedString.value.midi))
@@ -39,7 +42,8 @@ function maybeComplete() {
   const exploredStrings = visited.value.length === strings.length
   const exploredFrets = [0, 1, 2, 3].every(value => visitedFrets.value.includes(value))
   const exploredNaturalNotes = visitedNaturalNotes.value.length === totalNaturalNotes.value
-  if (exploredStrings && exploredFrets && exploredNaturalNotes) complete(1)
+  const exploredAlteredNotes = visitedAlteredNotes.value.length === 4
+  if (exploredStrings && exploredFrets && exploredNaturalNotes && exploredAlteredNotes) complete(1)
 }
 
 function selectString(string: typeof strings[number]) {
@@ -62,6 +66,13 @@ function playNaturalNote(midi: number, stringNumber: number, fret: number, name:
   const key = `${stringNumber}-${fret}`
   selectedNaturalNote.value = { key, midi, stringNumber, stringName: string.name, fret, name }
   if (!visitedNaturalNotes.value.includes(key)) visitedNaturalNotes.value.push(key)
+  maybeComplete()
+  void playGuitarNote(midi, stringNumber)
+}
+
+function playAlteredNote(key: string, spelling: string, midi: number, stringNumber: number, fret: number) {
+  selectedAlteredNote.value = { key, spelling, midi, stringNumber, fret }
+  if (!visitedAlteredNotes.value.includes(key)) visitedAlteredNotes.value.push(key)
   maybeComplete()
   void playGuitarNote(midi, stringNumber)
 }
@@ -218,6 +229,86 @@ function playNaturalNote(midi: number, stringNumber: number, fret: number, name:
       </p>
     </section>
 
+
+    <section class="panel mt-4 p-3 sm:p-4">
+      <div class="mb-3">
+        <p class="eyebrow">Notas alteradas · Sostenidos y bemoles</p>
+        <h2 class="text-lg font-black">¿Qué hay entre dos notas naturales?</h2>
+        <p class="mt-1 text-sm leading-5 text-[#788780]">
+          Ya sabes que cada traste sube un semitono. Cuando entre dos notas naturales hay un tono, el traste intermedio produce una nota que puede nombrarse con un sostenido o con un bemol.
+        </p>
+      </div>
+
+      <div class="grid gap-3 sm:grid-cols-2">
+        <div class="rounded-xl bg-[#f7f4ed] p-3">
+          <p class="text-xs font-extrabold uppercase tracking-wide text-[#8a795f]">Ejemplo 1 · Primera cuerda</p>
+          <p class="mt-1 text-sm text-[#6e786f]">Mi al aire · Fa en el traste 1 · La nota intermedia en el traste 2 · Sol en el traste 3.</p>
+          <div class="mt-3 grid grid-cols-3 gap-2">
+            <button class="rounded-lg bg-white p-3 text-center transition active:scale-95" :class="selectedAlteredNote?.key === 'fa-sharp' ? 'ring-2 ring-[#4c9c7c] bg-[#dcebe0]' : ''" @click="playAlteredNote('fa-sharp', 'Fa♯4', 66, 1, 2)">
+              <span class="block text-xl font-black text-[#176b5b]">Fa♯</span>
+              <span class="block text-[10px] text-[#788780]">Sostenido</span>
+            </button>
+            <button class="rounded-lg bg-white p-3 text-center transition active:scale-95" :class="selectedAlteredNote?.key === 'sol-flat' ? 'ring-2 ring-[#4c9c7c] bg-[#dcebe0]' : ''" @click="playAlteredNote('sol-flat', 'Sol♭4', 66, 1, 2)">
+              <span class="block text-xl font-black text-[#176b5b]">Sol♭</span>
+              <span class="block text-[10px] text-[#788780]">Bemol</span>
+            </button>
+            <div class="rounded-lg bg-[#edf4ee] p-2 text-center">
+              <span class="block text-[10px] font-bold text-[#718078]">Traste</span>
+              <span class="block text-xl font-black text-[#176b5b]">2</span>
+              <span class="block text-[10px] text-[#788780]">Misma posición</span>
+            </div>
+          </div>
+          <p class="mt-2 text-xs leading-5 text-[#567267]">Fa♯ significa Fa elevado un semitono. Sol♭ significa Sol bajado un semitono. En esta posición ambos nombres corresponden al mismo sonido.</p>
+        </div>
+
+        <div class="rounded-xl bg-[#f7f4ed] p-3">
+          <p class="text-xs font-extrabold uppercase tracking-wide text-[#8a795f]">Ejemplo 2 · Segunda cuerda</p>
+          <p class="mt-1 text-sm text-[#6e786f]">Si al aire · Do en el traste 1 · La nota intermedia en el traste 2 · Re en el traste 3.</p>
+          <div class="mt-3 grid grid-cols-3 gap-2">
+            <button class="rounded-lg bg-white p-3 text-center transition active:scale-95" :class="selectedAlteredNote?.key === 'do-sharp' ? 'ring-2 ring-[#4c9c7c] bg-[#dcebe0]' : ''" @click="playAlteredNote('do-sharp', 'Do♯4', 61, 2, 2)">
+              <span class="block text-xl font-black text-[#176b5b]">Do♯</span>
+              <span class="block text-[10px] text-[#788780]">Sostenido</span>
+            </button>
+            <button class="rounded-lg bg-white p-3 text-center transition active:scale-95" :class="selectedAlteredNote?.key === 're-flat' ? 'ring-2 ring-[#4c9c7c] bg-[#dcebe0]' : ''" @click="playAlteredNote('re-flat', 'Re♭4', 61, 2, 2)">
+              <span class="block text-xl font-black text-[#176b5b]">Re♭</span>
+              <span class="block text-[10px] text-[#788780]">Bemol</span>
+            </button>
+            <div class="rounded-lg bg-[#edf4ee] p-2 text-center">
+              <span class="block text-[10px] font-bold text-[#718078]">Traste</span>
+              <span class="block text-xl font-black text-[#176b5b]">2</span>
+              <span class="block text-[10px] text-[#788780]">Misma posición</span>
+            </div>
+          </div>
+          <p class="mt-2 text-xs leading-5 text-[#567267]">Do♯ sube Do un semitono; Re♭ baja Re un semitono. En el segundo traste de esta cuerda producen la misma altura.</p>
+        </div>
+      </div>
+
+      <div class="mt-3 rounded-xl bg-[#edf4ee] p-3">
+        <p class="text-sm font-black text-[#426c5b]">Dos nombres, un mismo sonido: enarmonía</p>
+        <p class="mt-1 text-xs leading-5 text-[#567267]">
+          Cuando dos notas tienen nombres distintos pero suenan a la misma altura, son enarmónicas. En la guitarra pueden ocupar exactamente el mismo traste y la misma cuerda. El contexto musical determina cuál nombre conviene escribir.
+        </p>
+        <p v-if="selectedAlteredNote" class="mt-2 rounded-lg bg-white px-3 py-2 text-center text-xs font-bold text-[#176b5b]">
+          Seleccionaste {{ selectedAlteredNote.spelling }} · Cuerda {{ selectedAlteredNote.stringNumber }} · Traste {{ selectedAlteredNote.fret }}. Escucha: las dos grafías de cada pareja comparten el mismo sonido.
+        </p>
+      </div>
+    </section>
+
+    <section class="panel mt-4 p-3 sm:p-4">
+      <div class="mb-3">
+        <p class="eyebrow">Comprueba lo aprendido</p>
+        <h2 class="text-lg font-black">Pequeño reto</h2>
+        <p class="mt-1 text-sm leading-5 text-[#788780]">Si Fa♯ y Sol♭ están en el mismo traste de la primera cuerda, ¿qué afirmación es correcta?</p>
+      </div>
+      <div class="grid gap-2 sm:grid-cols-3">
+        <button class="rounded-xl border-2 bg-white p-3 text-left text-sm font-semibold transition active:scale-[0.98]" :class="quizAnswer === 'same' ? 'border-[#4c9c7c] bg-[#edf4ee]' : 'border-[#e5e8e2]'" @click="quizAnswer = 'same'">Suenan igual, aunque se escriben distinto.</button>
+        <button class="rounded-xl border-2 bg-white p-3 text-left text-sm font-semibold transition active:scale-[0.98]" :class="quizAnswer === 'higher' ? 'border-[#4c9c7c] bg-[#edf4ee]' : 'border-[#e5e8e2]'" @click="quizAnswer = 'higher'">Fa♯ suena más agudo que Sol♭.</button>
+        <button class="rounded-xl border-2 bg-white p-3 text-left text-sm font-semibold transition active:scale-[0.98]" :class="quizAnswer === 'different' ? 'border-[#4c9c7c] bg-[#edf4ee]' : 'border-[#e5e8e2]'" @click="quizAnswer = 'different'">Necesitan dos trastes diferentes.</button>
+      </div>
+      <p v-if="quizAnswer === 'same'" class="mt-3 rounded-lg bg-[#e9f5ed] p-3 text-sm font-semibold text-[#226447]">¡Correcto! Son enarmónicas: dos nombres para una misma altura.</p>
+      <p v-else-if="quizAnswer" class="mt-3 rounded-lg bg-[#fff3e5] p-3 text-sm text-[#8a5a2c]">No exactamente. Recuerda: Fa♯ sube desde Fa y Sol♭ baja desde Sol. Ambos llegan a la misma altura.</p>
+    </section>
+
     <div class="mt-3 grid gap-2 sm:grid-cols-2">
       <div class="rounded-xl bg-[#edf4ee] p-3 text-xs leading-5 text-[#567267]">
         <b>¿Por qué hay dos cuerdas Mi?</b>
@@ -229,7 +320,7 @@ function playNaturalNote(midi: number, stringNumber: number, fret: number, name:
       </div>
     </div>
 
-    <div v-if="visited.length === 6 && [0, 1, 2, 3].every(value => visitedFrets.includes(value)) && visitedNaturalNotes.length === totalNaturalNotes" class="mt-3 flex items-center gap-2 rounded-xl bg-[#e9f5ed] p-3 text-sm font-semibold text-[#226447]">
+    <div v-if="visited.length === 6 && [0, 1, 2, 3].every(value => visitedFrets.includes(value)) && visitedNaturalNotes.length === totalNaturalNotes && visitedAlteredNotes.length === 4" class="mt-3 flex items-center gap-2 rounded-xl bg-[#e9f5ed] p-3 text-sm font-semibold text-[#226447]">
       <CheckCircle2 :size="19" />
       ¡Has explorado las seis cuerdas y las primeras posiciones! Ya conoces las cuerdas al aire y cómo suben las notas.
     </div>
