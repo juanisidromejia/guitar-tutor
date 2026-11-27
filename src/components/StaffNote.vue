@@ -62,10 +62,13 @@ const ledgerLines = computed(() => {
       </g>
       <text x="47" y="139" font-size="70" fill="#176b5b">𝄞</text>
       <text x="76" y="184" font-size="22" font-weight="700" text-anchor="middle" fill="#176b5b">8</text>
-      <path
+      <line
         v-for="lineY in ledgerLines"
         :key="lineY"
-        :d="'M 150 ' + lineY + ' h 44"
+        x1="150"
+        :y1="lineY"
+        x2="194"
+        :y2="lineY"
         stroke="#68766f"
         stroke-width="1.4"
       />
