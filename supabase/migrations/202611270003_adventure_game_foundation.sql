@@ -121,24 +121,30 @@ alter table public.adventure_events enable row level security;
 alter table public.adventure_enemies enable row level security;
 alter table public.adventure_combat enable row level security;
 
+create or replace function public.is_adventure_member(p_game_id uuid)
+returns boolean language sql stable security definer set search_path=public
+as $ select exists(select 1 from public.adventure_players p where p.game_id=p_game_id and p.user_id=auth.uid()) $;
+create or replace function public.is_adventure_owner(p_game_id uuid)
+returns boolean language sql stable security definer set search_path=public
+as $ select exists(select 1 from public.adventure_games g where g.id=p_game_id and g.owner_id=auth.uid()) $;
 drop policy if exists "adventure games visible to members" on public.adventure_games;
 create policy "adventure games visible to members" on public.adventure_games for select to authenticated
-using(owner_id=auth.uid() or exists(select 1 from public.adventure_players p where p.game_id=id and p.user_id=auth.uid()));
+using(public.is_adventure_owner(id) or public.is_adventure_member(id));
 drop policy if exists "adventure players visible to members" on public.adventure_players;
 create policy "adventure players visible to members" on public.adventure_players for select to authenticated
-using(exists(select 1 from public.adventure_games g where g.id=game_id and g.owner_id=auth.uid()) or exists(select 1 from public.adventure_players me where me.game_id=game_id and me.user_id=auth.uid()));
+using(public.is_adventure_owner(game_id) or public.is_adventure_member(game_id));
 drop policy if exists "adventure events visible to members" on public.adventure_events;
 create policy "adventure events visible to members" on public.adventure_events for select to authenticated
-using(exists(select 1 from public.adventure_games g where g.id=game_id and g.owner_id=auth.uid()) or exists(select 1 from public.adventure_players p where p.game_id=game_id and p.user_id=auth.uid()));
+using(public.is_adventure_owner(game_id) or public.is_adventure_member(game_id));
 drop policy if exists "adventure inventory visible to owner" on public.adventure_inventory;
 create policy "adventure inventory visible to owner" on public.adventure_inventory for select to authenticated
-using(exists(select 1 from public.adventure_players p where p.id=player_id and p.user_id=auth.uid()) or exists(select 1 from public.adventure_games g where g.id=game_id and g.owner_id=auth.uid()));
+using(exists(select 1 from public.adventure_players p where p.id=player_id and p.user_id=auth.uid()) or public.is_adventure_owner(game_id));
 drop policy if exists "adventure treasures visible to members" on public.adventure_treasures;
 create policy "adventure treasures visible to members" on public.adventure_treasures for select to authenticated
-using(exists(select 1 from public.adventure_games g where g.id=game_id and g.owner_id=auth.uid()) or exists(select 1 from public.adventure_players p where p.game_id=game_id and p.user_id=auth.uid()));
+using(public.is_adventure_owner(game_id) or public.is_adventure_member(game_id));
 drop policy if exists "adventure enemies visible to members" on public.adventure_enemies;
 create policy "adventure enemies visible to members" on public.adventure_enemies for select to authenticated
-using(exists(select 1 from public.adventure_games g where g.id=game_id and g.owner_id=auth.uid()) or exists(select 1 from public.adventure_players p where p.game_id=game_id and p.user_id=auth.uid()));
+using(public.is_adventure_owner(game_id) or public.is_adventure_member(game_id));
 
 revoke all on public.adventure_challenges,public.adventure_answers,public.adventure_combat from anon,authenticated;
 revoke all on public.adventure_games,public.adventure_rooms,public.adventure_players,public.adventure_inventory,public.adventure_treasures,public.adventure_events,public.adventure_enemies from anon,authenticated;
@@ -298,7 +304,7 @@ begin
   on conflict(player_id,item_key) do update set quantity=public.adventure_inventory.quantity+1;
   insert into public.adventure_events(game_id,actor_player_id,event_type,message) values(p_game_id,v_player.id,'gift',v_player.nickname||' ha recibido: '||v_label||'.');
  elsif p_action='revive' then
-  update public.adventure_players set eliminated=false,errors=0,challenge_id=(select id from public.adventure_challenges where game_id=p_game_id and room_index=room_index order by random() limit 1),last_seen_at=now()
+  update public.adventure_players set eliminated=false,errors=0,challenge_id=(select c.id from public.adventure_challenges c where c.game_id=p_game_id and c.room_index=adventure_players.room_index order by random() limit 1),last_seen_at=now()
   where id=(p_payload->>'player_id')::uuid and game_id=p_game_id;
   if not found then raise exception 'No se encontró al estudiante.'; end if;
   insert into public.adventure_events(game_id,event_type,message) values(p_game_id,'revival','El maestro del juego ha devuelto a un aventurero a la expedición.');
