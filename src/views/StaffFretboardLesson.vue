@@ -12,7 +12,6 @@ import StaffMinorScales from '../components/StaffMinorScales.vue'
 import StaffIntervals from '../components/StaffIntervals.vue'
 import StaffTriads from '../components/StaffTriads.vue'
 import StaffTriadInversions from '../components/StaffTriadInversions.vue'
-import StaffMelodyReading from '../components/StaffMelodyReading.vue'
 </script>
 
 <template>
