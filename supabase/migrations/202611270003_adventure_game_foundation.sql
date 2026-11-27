@@ -186,7 +186,7 @@ begin
  (v_game.id,3,'beginner','e-scale-a','¿Cuántos sostenidos tiene la tonalidad de Mi mayor?','["Dos","Tres","Cuatro","Cinco"]'::jsonb,'Cuatro','Mi mayor tiene Fa♯, Do♯, Sol♯ y Re♯.'),
  (v_game.id,3,'beginner','e-scale-b','¿Cuál de estas notas está alterada en Mi mayor?','["Fa♯","La","Si","Mi"]'::jsonb,'Fa♯','Mi mayor contiene cuatro sostenidos, incluido Fa♯.'),
  (v_game.id,4,'beginner','g-chord-a','¿Qué notas forman la tríada de Sol mayor?','["Sol–Si–Re","Sol–Si♭–Re","Sol–Do–Mi","Sol–La–Re"]'::jsonb,'Sol–Si–Re','Sol mayor se forma con fundamental, tercera mayor y quinta justa.'),
- (v_game.id,4,'beginner','g-chord-b','¿Cuál es el acorde mayor construido sobre la nota Sol?','["Sol–Si–Re","Sol–Si♭–Re","Sol–Do–Re","Sol–La–Do"]'::jsonb,'Sol–Si–Re','La tríada mayor de Sol contiene Sol, Si y Re.');
+ (v_game.id,4,'beginner','g-chord-b','¿Cuál es el acorde mayor construido sobre la nota Sol?','["Sol–Si–Re","Sol–Si♭–Re","Sol–Do–Re","Sol–La–Do"]'::jsonb,'Sol–Si–Re','La tríada mayor de Sol contiene Sol, Si y Re.'),
  (v_game.id,0,'intermediate','g-scale-c','¿Qué grado de la escala de Sol mayor es Fa♯?','["Cuarto","Quinto","Sexto","Séptimo"]'::jsonb,'Séptimo','Fa♯ es el séptimo grado de Sol mayor.'),
  (v_game.id,0,'advanced','g-scale-d','¿Qué intervalo separa Mi de Fa♯ en Sol mayor?','["Segunda mayor","Tercera menor","Segunda menor","Tercera mayor"]'::jsonb,'Segunda mayor','Mi–Fa♯ es una segunda mayor.'),
  (v_game.id,1,'intermediate','g-notes-c','¿Qué nota ocupa el sexto grado de Sol mayor?','["Do","Re","Mi","Fa♯"]'::jsonb,'Mi','Los grados son Sol, La, Si, Do, Re, Mi y Fa♯.'),
@@ -218,7 +218,12 @@ begin
   insert into public.adventure_players(game_id,user_id,nickname,challenge_id) values(v_game.id,auth.uid(),trim(p_nickname),v_challenge.id) returning * into v_player;
   insert into public.adventure_events(game_id,actor_player_id,event_type,message) values(v_game.id,v_player.id,'player_joined',v_player.nickname||' se ha unido a la expedición.');
  else
-  update public.adventure_players set nickname=trim(p_nickname),last_seen_at=now(),disconnected_at=null where id=v_player.id returning * into v_player;
+  if v_game.status='active' and v_player.last_seen_at < now()-interval '3 minutes' then
+   update public.adventure_players set eliminated=true,errors=3,last_seen_at=now(),disconnected_at=now() where id=v_player.id returning * into v_player;
+   insert into public.adventure_events(game_id,actor_player_id,event_type,message) values(v_game.id,v_player.id,'reconnect_expired',v_player.nickname||' perdió la conexión durante más de tres minutos y quedó fuera de la expedición.');
+  else
+   update public.adventure_players set nickname=trim(p_nickname),last_seen_at=now(),disconnected_at=null where id=v_player.id returning * into v_player;
+  end if;
   select * into v_challenge from public.adventure_challenges where id=v_player.challenge_id;
  end if;
  return jsonb_build_object('game',jsonb_build_object('id',v_game.id,'code',v_game.code,'title',v_game.title,'status',v_game.status,'difficulty',v_game.difficulty,'created_at',v_game.created_at),'player_id',v_player.id,'challenge',case when v_challenge.id is null then null else public.adventure_get_challenge(v_challenge.id) end,'room_index',v_player.room_index,'errors',v_player.errors,'eliminated',v_player.eliminated);
