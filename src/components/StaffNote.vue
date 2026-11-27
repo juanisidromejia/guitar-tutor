@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { midiToNote } from '../engines/music/musicTheory'
+import { midiToNote, noteToMidi } from '../engines/music/musicTheory'
 import type { SpelledNote } from '../engines/music/musicTheory'
 
 const props = defineProps<{
@@ -10,7 +10,11 @@ const props = defineProps<{
   spelling?: SpelledNote
 }>()
 
-const note = computed(() => props.spelling ?? midiToNote(props.midi))
+const note = computed(() =>
+  props.spelling && noteToMidi(props.spelling) === props.midi
+    ? props.spelling
+    : midiToNote(props.midi),
+)
 const letterIndex = computed(() => ['Do', 'Re', 'Mi', 'Fa', 'Sol', 'La', 'Si'].indexOf(note.value.letter))
 const diatonicStep = computed(() => note.value.octave * 7 + letterIndex.value)
 const y = computed(() => 147 - (diatonicStep.value - 30) * 9)
