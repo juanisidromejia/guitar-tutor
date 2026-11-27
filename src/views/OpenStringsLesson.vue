@@ -2,6 +2,7 @@
 import { computed, ref } from 'vue'
 import { CheckCircle2 } from 'lucide-vue-next'
 import StaffNote from '../components/StaffNote.vue'
+import GuitarFretboard from '../components/GuitarFretboard.vue'
 import { midiHz, midiName } from '../engines/music/pitch'
 import { playGuitarNote } from '../engines/audio/guitarSound'
 import { useProgress } from '../composables/useProgress'
@@ -25,6 +26,35 @@ const selectedNaturalNote = ref<{ key: string; midi: number; stringNumber: numbe
 const visitedAlteredNotes = ref<string[]>([])
 const selectedAlteredNote = ref<{ key: string; spelling: string; midi: number; stringNumber: number; fret: number } | null>(null)
 const quizAnswer = ref('')
+const alteredChallenges = [
+  { label: 'Fa♯4 / Sol♭4', string: 1, fret: 2, midi: 66, explanation: 'En la primera cuerda, el segundo traste está un semitono por encima de Fa.' },
+  { label: 'Do♯4 / Re♭4', string: 2, fret: 2, midi: 61, explanation: 'En la segunda cuerda, el segundo traste está un semitono por encima de Do.' },
+] as const
+const alteredChallengeIndex = ref(0)
+const alteredChallengeSelection = ref<{ string: number; fret: number } | null>(null)
+const alteredChallengeFeedback = ref<'correct' | 'wrong' | null>(null)
+const alteredChallengeDone = ref(false)
+const currentAlteredChallenge = computed(() => alteredChallenges[alteredChallengeIndex.value])
+
+function chooseAlteredChallenge(position: { string: number; fret: number; midi: number }) {
+  if (alteredChallengeFeedback.value === 'correct' || alteredChallengeDone.value) return
+  alteredChallengeSelection.value = position
+  void playGuitarNote(position.midi, position.string)
+  alteredChallengeFeedback.value = position.string === currentAlteredChallenge.value.string
+    && position.fret === currentAlteredChallenge.value.fret
+    ? 'correct'
+    : 'wrong'
+}
+
+function nextAlteredChallenge() {
+  if (alteredChallengeIndex.value === alteredChallenges.length - 1) {
+    alteredChallengeDone.value = true
+    return
+  }
+  alteredChallengeIndex.value++
+  alteredChallengeSelection.value = null
+  alteredChallengeFeedback.value = null
+}
 const totalNaturalNotes = computed(() => naturalNotesByString.value.reduce((total, string) => total + string.notes.length, 0))
 const fretNote = computed(() => midiName(strings[0].midi + selectedFret.value))
 const note = computed(() => midiName(selectedString.value.midi))
@@ -280,6 +310,47 @@ function playAlteredNote(key: string, spelling: string, midi: number, stringNumb
             </div>
           </div>
           <p class="mt-2 text-xs leading-5 text-[#567267]">Do♯ sube Do un semitono; Re♭ baja Re un semitono. En el segundo traste de esta cuerda producen la misma altura.</p>
+        </div>
+      </div>
+
+      <div class="mt-3 rounded-xl border border-[#dce7df] p-3">
+        <div class="mb-2 flex items-center justify-between gap-2">
+          <div>
+            <p class="eyebrow">Práctica guiada · Localiza la alteración</p>
+            <h3 class="mt-1 text-base font-black">Encuentra el traste intermedio</h3>
+          </div>
+          <span v-if="!alteredChallengeDone" class="rounded-full bg-[#edf4ee] px-2.5 py-1 text-[10px] font-bold text-[#426c5b]">Paso {{ alteredChallengeIndex + 1 }} de {{ alteredChallenges.length }}</span>
+        </div>
+        <template v-if="!alteredChallengeDone">
+          <p class="mb-3 text-sm leading-5 text-[#567267]">
+            Busca <b>{{ currentAlteredChallenge.label }}</b> en el diapasón. Recuerda que los dos nombres representan la misma altura y comparten una posición.
+          </p>
+          <GuitarFretboard
+            :start-fret="0"
+            :end-fret="5"
+            :selected="alteredChallengeSelection"
+            :disabled="alteredChallengeFeedback === 'correct'"
+            @select="chooseAlteredChallenge"
+          />
+          <p v-if="alteredChallengeFeedback === 'wrong'" class="mt-2 rounded-lg bg-[#fff1e9] p-2.5 text-xs font-semibold text-[#a14f2d]">
+            Aún no. {{ currentAlteredChallenge.explanation }} Inténtalo otra vez.
+          </p>
+          <div v-else-if="alteredChallengeFeedback === 'correct'" class="mt-2 flex items-center gap-2 rounded-lg bg-[#e9f5ed] p-3 text-[#226447]">
+            <CheckCircle2 :size="18" />
+            <div class="flex-1">
+              <p class="text-sm font-bold">¡Correcto! Cuerda {{ currentAlteredChallenge.string }}, traste {{ currentAlteredChallenge.fret }}.</p>
+              <p class="mt-0.5 text-xs">{{ currentAlteredChallenge.explanation }}</p>
+            </div>
+            <button class="primary shrink-0 px-3 py-2 text-xs" @click="nextAlteredChallenge">
+              {{ alteredChallengeIndex === alteredChallenges.length - 1 ? 'Finalizar' : 'Continuar' }}
+            </button>
+          </div>
+          <p v-else class="mt-2 text-center text-xs text-[#788780]">Selecciona una posición en el diapasón.</p>
+        </template>
+        <div v-else class="flex items-center gap-2 rounded-lg bg-[#e9f5ed] p-3 text-sm font-semibold text-[#226447]">
+          <CheckCircle2 :size="19" />
+          ¡Muy bien! Ya localizaste dos notas alteradas y comprobaste sus posiciones en el diapasón.
+          <button class="secondary ml-auto shrink-0 text-xs" @click="alteredChallengeIndex = 0; alteredChallengeSelection = null; alteredChallengeFeedback = null; alteredChallengeDone = false">Repetir</button>
         </div>
       </div>
 
