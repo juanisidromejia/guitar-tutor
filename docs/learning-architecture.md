@@ -67,7 +67,7 @@ Los niveles no deben ser etiquetas arbitrarias: cada lección declarará prerreq
 
 ## Regiones del diapasón
 
-La región se configura mediante `startFret` y `endFret`, con validación de cinco espacios consecutivos. La lista inicial es editable como datos; el componente visual deberá recibir la región como propiedad en una fase posterior. El primer sector pedagógico queda fijado en 1–5, el segundo en 5–9 y las regiones avanzadas son ventanas móviles.
+La región se configura mediante las propiedades `startFret` y `endFret` del componente reutilizable `GuitarFretboard.vue`, con validación de cinco trastes consecutivos. La vista de lectura pentagrama–diapasón ya utiliza 1–5. La presentación heredada de cuerdas al aire más trastes 1–5 se conserva como valor predeterminado para no alterar los módulos existentes. La lista inicial de regiones es editable como datos. El primer sector pedagógico queda fijado en 1–5, el segundo en 5–9 y las regiones avanzadas son ventanas móviles.
 
 ## Arquitectura de ejercicios
 
@@ -80,9 +80,11 @@ Un ejercicio común tiene:
 
 Los formatos reutilizan visualizadores existentes: pentagrama, diapasón, audio, patrón rítmico y AlphaTab. Añadir una dificultad o una nueva región debe ser principalmente una modificación de datos/configuración.
 
-## Fuera del alcance de esta primera parte
+## Alcance implementado hasta ahora
 
-- No se cambia todavía la interfaz del diapasón.
+- El diapasón existente acepta `startFret` y `endFret` para mostrar cualquier ventana válida de cinco trastes.
+- La lección de relación pentagrama–diapasón utiliza la región principiante 1–5.
+- Se conserva la vista anterior de cuerdas al aire y trastes 1–5 como valor predeterminado para mantener compatibilidad.
 - No se altera el comportamiento de `StaffNote.vue`.
 - No se reemplazan las 12 preguntas actuales.
 - No se modifica el esquema Supabase ni las migraciones de sesiones.
@@ -90,7 +92,7 @@ Los formatos reutilizan visualizadores existentes: pentagrama, diapasón, audio,
 
 ## Próximas etapas
 
-1. Configurar el componente de diapasón para recibir ventanas de cinco espacios.
+1. Incorporar un selector de regiones y ejercicios configurables para las ventanas del diapasón.
 2. Ampliar la escritura de notas en pentagrama para sostenidos/bemoles explícitos.
 3. Ampliar el banco de preguntas con etiquetas de nivel, área, tema y prerrequisitos.
 4. Incorporar armonía y reconocimiento de acordes reutilizando el modelo de notas.
