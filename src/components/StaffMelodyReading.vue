@@ -56,7 +56,7 @@ function choose(position: Position) {
     activeIndex.value++
     selected.value = null
     feedback.value = null
-    if (activeIndex.value >= melody.length) complete(3)
+    if (activeIndex.value >= melody.length) complete(4)
   }, 550)
 }
 
@@ -76,17 +76,17 @@ onBeforeUnmount(() => {
 <template>
   <section class="panel mb-4 p-3 sm:p-4">
     <div class="mb-3">
-      <p class="eyebrow">Lectura musical · Aplicación en guitarra</p>
-      <h2 class="text-lg font-black">De la partitura al diapasón</h2>
+      <p class="eyebrow">Del papel a la guitarra · Lectura e interpretación</p>
+      <h2 class="text-lg font-black">Estrellita, ¿dónde estás?</h2>
       <p class="mt-1 text-sm leading-5 text-[#788780]">
-        Lee la melodía en el pentagrama y encuentra cada nota en la guitarra. Cuando aciertes, la nota quedará marcada y escucharás su sonido.
+        Lee la melodía en el pentagrama y toca sus notas en el mástil, una por una.
       </p>
     </div>
 
     <div class="rounded-xl bg-[#f5f8f4] p-2 sm:p-3">
       <div class="mb-2 flex flex-wrap items-center justify-between gap-2">
         <div>
-          <p class="eyebrow">Melodía de práctica</p>
+          <p class="eyebrow">Partitura · Do mayor</p>
           <p class="text-sm font-black text-[#365c4c]">Estrellita, ¿dónde estás?</p>
         </div>
         <span class="rounded-full bg-white px-2.5 py-1 text-[11px] font-bold text-[#426c5b]">
