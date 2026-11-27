@@ -20,6 +20,9 @@ const selectedString = computed(() => selected.value ?? strings[0])
 const visited = ref<number[]>([])
 const selectedFret = ref(0)
 const visitedFrets = ref<number[]>([])
+const visitedNaturalNotes = ref<string[]>([])
+const selectedNaturalNote = ref<{ key: string; midi: number; stringNumber: number; stringName: string; fret: number; name: string } | null>(null)
+const totalNaturalNotes = computed(() => naturalNotesByString.value.reduce((total, string) => total + string.notes.length, 0))
 const fretNote = computed(() => midiName(strings[0].midi + selectedFret.value))
 const note = computed(() => midiName(selectedString.value.midi))
 const writtenNote = computed(() => midiName(selectedString.value.midi + 12))
@@ -33,7 +36,10 @@ const naturalNotesByString = computed(() => strings.map(string => ({
 })))
 
 function maybeComplete() {
-  if (visited.value.length === strings.length && [0, 1, 2, 3].every(value => visitedFrets.value.includes(value))) complete(1)
+  const exploredStrings = visited.value.length === strings.length
+  const exploredFrets = [0, 1, 2, 3].every(value => visitedFrets.value.includes(value))
+  const exploredNaturalNotes = visitedNaturalNotes.value.length === totalNaturalNotes.value
+  if (exploredStrings && exploredFrets && exploredNaturalNotes) complete(1)
 }
 
 function selectString(string: typeof strings[number]) {
@@ -50,8 +56,14 @@ function selectFret(fret: number) {
   void playGuitarNote(strings[0].midi + fret, 1)
 }
 
-function playNaturalNote(midi: number, string: number) {
-  void playGuitarNote(midi, string)
+function playNaturalNote(midi: number, stringNumber: number, fret: number, name: string) {
+  const string = strings.find(item => item.number === stringNumber)
+  if (!string) return
+  const key = `${stringNumber}-${fret}`
+  selectedNaturalNote.value = { key, midi, stringNumber, stringName: string.name, fret, name }
+  if (!visitedNaturalNotes.value.includes(key)) visitedNaturalNotes.value.push(key)
+  maybeComplete()
+  void playGuitarNote(midi, stringNumber)
 }
 </script>
 
@@ -168,8 +180,15 @@ function playNaturalNote(midi: number, string: number) {
         <p class="eyebrow">Exploración guiada · Primera posición</p>
         <h2 class="text-lg font-black">Conoce las notas naturales</h2>
         <p class="mt-1 text-sm leading-5 text-[#788780]">
-          Observa cómo aparecen las notas naturales en las seis cuerdas, desde el sonido al aire hasta el tercer traste. Pulsa cada nota para escucharla.
+          Explora las notas naturales de cada cuerda. Selecciona cada posición, escucha su sonido y observa cómo cambia el nombre de la nota al avanzar por el diapasón.
         </p>
+      </div>
+      <div class="mb-3 flex items-center justify-between gap-3 rounded-lg bg-[#edf4ee] px-3 py-2">
+        <div>
+          <p class="text-xs font-bold text-[#567267]">Notas naturales exploradas</p>
+          <p class="text-[10px] text-[#788780]">Selecciona todas las posiciones para completar esta parte</p>
+        </div>
+        <span class="text-sm font-black text-[#176b5b]">{{ visitedNaturalNotes.length }} / {{ totalNaturalNotes }}</span>
       </div>
       <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
         <div v-for="string in naturalNotesByString" :key="string.number" class="rounded-xl bg-[#f7f4ed] p-3">
@@ -178,17 +197,24 @@ function playNaturalNote(midi: number, string: number) {
             <button
               v-for="item in string.notes"
               :key="item.fret"
-              class="min-w-[64px] flex-1 rounded-lg bg-white px-2 py-2 text-center transition hover:bg-[#dcebe0] active:scale-95"
-              @click="playNaturalNote(item.midi, string.number)"
+              class="min-w-[64px] flex-1 rounded-lg border-2 px-2 py-2 text-center transition hover:bg-[#dcebe0] active:scale-95"
+              :class="selectedNaturalNote?.key === `${string.number}-${item.fret}` ? 'border-[#4c9c7c] bg-[#dcebe0]' : 'border-transparent bg-white'"
+              @click="playNaturalNote(item.midi, string.number, item.fret, item.note.name)"
             >
               <span class="block text-lg font-black text-[#176b5b]">{{ item.note.name }}</span>
               <span class="block text-[10px] text-[#788780]">{{ item.fret === 0 ? 'Al aire' : 'Traste ' + item.fret }}</span>
+              <span v-if="visitedNaturalNotes.includes(`${string.number}-${item.fret}`)" class="mt-1 block text-[9px] font-bold text-[#4c9c7c]">Explorada ✓</span>
             </button>
           </div>
         </div>
       </div>
+      <div v-if="selectedNaturalNote" class="mt-3 rounded-xl bg-[#f5f8f4] p-3 text-center">
+        <p class="text-[10px] font-bold uppercase tracking-wide text-[#718078]">Nota que acabas de escuchar</p>
+        <p class="mt-1 text-2xl font-black text-[#176b5b]">{{ selectedNaturalNote.name }}{{ midiName(selectedNaturalNote.midi).octave }}</p>
+        <p class="mt-1 text-xs text-[#75827b]">Cuerda {{ selectedNaturalNote.stringNumber }} ({{ selectedNaturalNote.stringName }}) · {{ selectedNaturalNote.fret === 0 ? 'al aire' : 'traste ' + selectedNaturalNote.fret }} · Sonido real</p>
+      </div>
       <p class="mt-3 rounded-lg bg-[#edf4ee] p-3 text-xs leading-5 text-[#567267]">
-        Algunas posiciones se omiten porque producen notas alteradas, como sostenidos. Primero aprenderás las notas naturales; después estudiaremos esas notas intermedias y sus distintas formas de escritura.
+        Algunas posiciones se omiten porque producen notas alteradas, como sostenidos. Por ejemplo, en la primera cuerda encontramos Mi al aire, Fa en el primer traste y Sol en el tercero. El segundo traste produce Fa♯; lo estudiaremos en la siguiente lección sobre alteraciones.
       </p>
     </section>
 
@@ -203,7 +229,7 @@ function playNaturalNote(midi: number, string: number) {
       </div>
     </div>
 
-    <div v-if="visited.length === 6 && [0, 1, 2, 3].every(value => visitedFrets.includes(value))" class="mt-3 flex items-center gap-2 rounded-xl bg-[#e9f5ed] p-3 text-sm font-semibold text-[#226447]">
+    <div v-if="visited.length === 6 && [0, 1, 2, 3].every(value => visitedFrets.includes(value)) && visitedNaturalNotes.length === totalNaturalNotes" class="mt-3 flex items-center gap-2 rounded-xl bg-[#e9f5ed] p-3 text-sm font-semibold text-[#226447]">
       <CheckCircle2 :size="19" />
       ¡Has explorado las seis cuerdas y las primeras posiciones! Ya conoces las cuerdas al aire y cómo suben las notas.
     </div>
