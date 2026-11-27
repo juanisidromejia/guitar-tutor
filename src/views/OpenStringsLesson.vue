@@ -18,14 +18,23 @@ const strings = [
 const selected = ref<typeof strings[number] | null>(null)
 const selectedString = computed(() => selected.value ?? strings[0])
 const visited = ref<number[]>([])
+const selectedFret = ref(0)
+const visitedFrets = ref<number[]>([])
+const fretNote = computed(() => midiName(strings[0].midi + selectedFret.value))
 const note = computed(() => midiName(selectedString.value.midi))
 const writtenNote = computed(() => midiName(selectedString.value.midi + 12))
 
 function selectString(string: typeof strings[number]) {
   selected.value = string
   if (!visited.value.includes(string.number)) visited.value.push(string.number)
-  if (visited.value.length === strings.length) complete(1)
   void playGuitarNote(string.midi, string.number)
+}
+
+function selectFret(fret: number) {
+  selectedFret.value = fret
+  if (!visitedFrets.value.includes(fret)) visitedFrets.value.push(fret)
+  if (visited.value.length === strings.length && [0, 1, 2, 3].every(value => visitedFrets.value.includes(value))) complete(1)
+  void playGuitarNote(strings[0].midi + fret, 1)
 }
 
 
@@ -93,6 +102,52 @@ function selectString(string: typeof strings[number]) {
           </p>
         </div>
       </div>
+    </section>
+
+    <section class="panel mt-4 p-3 sm:p-4">
+      <div class="mb-3">
+        <p class="eyebrow">Siguiente paso · Altura de las notas</p>
+        <h2 class="text-lg font-black">¿Qué ocurre cuando pisamos un traste?</h2>
+        <p class="mt-1 text-sm leading-5 text-[#788780]">
+          Al presionar una cuerda contra un traste, acortamos la parte que vibra. Cuanto más avanzamos hacia el cuerpo de la guitarra, más agudo es el sonido.
+        </p>
+      </div>
+
+      <div class="rounded-xl bg-[#f7f4ed] p-3 sm:p-4">
+        <p class="text-center text-xs font-bold uppercase tracking-wide text-[#8a795f]">Primera cuerda · Mi al aire</p>
+        <div class="mt-3 grid grid-cols-4 gap-2">
+          <button
+            v-for="fret in [0, 1, 2, 3]"
+            :key="fret"
+            class="rounded-xl border-2 px-2 py-3 text-center transition active:scale-95"
+            :class="selectedFret === fret ? 'border-[#4c9c7c] bg-[#dcebe0]' : 'border-transparent bg-white hover:bg-[#f0f4ed]'"
+            @click="selectFret(fret)"
+          >
+            <span class="block text-[10px] font-bold uppercase text-[#788780]">{{ fret === 0 ? 'Al aire' : 'Traste ' + fret }}</span>
+            <span class="mt-1 block text-xl font-black text-[#176b5b]">{{ ['Mi', 'Fa', 'Fa♯', 'Sol'][fret] }}</span>
+            <span class="mt-1 block text-[10px] text-[#788780]">{{ fret === 0 ? '0 semitonos' : fret + ' semitono' + (fret === 1 ? '' : 's') }}</span>
+          </button>
+        </div>
+        <div class="mt-3 rounded-lg bg-white/80 p-3 text-center">
+          <p class="text-[10px] font-bold uppercase tracking-wide text-[#718078]">Nota seleccionada · Sonido real</p>
+          <p class="mt-1 text-3xl font-black text-[#176b5b]">{{ fretNote.name }}<sub class="ml-0.5 text-base">{{ fretNote.octave }}</sub></p>
+          <p class="mt-1 text-xs text-[#75827b]">Pulsa cada posición para escuchar cómo cambia la altura.</p>
+        </div>
+      </div>
+
+      <div class="mt-3 grid gap-2 sm:grid-cols-2">
+        <div class="rounded-xl bg-[#edf4ee] p-3 text-xs leading-5 text-[#567267]">
+          <b>Un traste = un semitono.</b>
+          Cada vez que avanzas un traste, la nota sube un semitono. Mi–Fa es un semitono; Fa–Sol son dos.
+        </div>
+        <div class="rounded-xl bg-[#edf4ee] p-3 text-xs leading-5 text-[#567267]">
+          <b>Dos trastes = un tono.</b>
+          Un tono equivale a dos semitonos. Por eso, desde Fa hasta Sol avanzamos dos trastes: Fa, Fa♯, Sol.
+        </div>
+      </div>
+      <p class="mt-3 text-xs leading-5 text-[#788780]">
+        Observa que entre Mi y Fa no aparece una nota natural intermedia. En cambio, entre Fa y Sol encontramos Fa♯. Más adelante aprenderás cómo se escriben y utilizan los sostenidos y bemoles.
+      </p>
     </section>
 
     <div class="mt-3 grid gap-2 sm:grid-cols-2">
