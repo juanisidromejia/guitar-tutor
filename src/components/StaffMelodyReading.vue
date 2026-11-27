@@ -2,7 +2,6 @@
 import { computed, onBeforeUnmount, ref } from 'vue'
 import { CheckCircle2, RotateCcw, XCircle } from 'lucide-vue-next'
 import GuitarFretboard from './GuitarFretboard.vue'
-import { fretMidi } from '../engines/guitar/fretboard'
 import { playGuitarNote } from '../engines/audio/guitarSound'
 import { useProgress } from '../composables/useProgress'
 
@@ -33,10 +32,6 @@ let advanceTimer: ReturnType<typeof setTimeout> | undefined
 const finished = computed(() => activeIndex.value >= melody.length)
 const currentMidi = computed(() => melody[activeIndex.value] ?? null)
 const progress = computed(() => Math.round(activeIndex.value / melody.length * 100))
-
-function isCompleted(index: number) {
-  return index < activeIndex.value
-}
 
 function choose(position: Position) {
   if (finished.value || feedback.value === 'correct' || currentMidi.value === null) return
