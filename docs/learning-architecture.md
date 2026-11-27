@@ -19,7 +19,7 @@ Construir una plataforma progresiva de aprendizaje musical, desde fundamentos ab
 |---|---|---|
 | Alturas | `src/engines/music/pitch.ts` | Mantener MIDI y ampliar grafías/enarmonía en el modelo común |
 | Diapasón | `src/engines/guitar/fretboard.ts`, `GuitarFretboard.vue` | Hacer configurable el rango de trastes sin duplicar el componente |
-| Pentagrama | `StaffNote.vue` | Añadir grafía explícita de alteraciones; conservar la transposición de octava de guitarra |
+| Pentagrama | `StaffNote.vue` | Acepta grafía explícita de sostenidos, bemoles y dobles alteraciones, conservando la altura MIDI y la transposición de octava de guitarra |
 | Audio | `guitarSound.ts` | Reutilizar reproducción de notas |
 | Ritmo | `rhythmSound.ts`, `RhythmReadingView.vue` | Ampliar catálogo de patrones y figuras sobre el motor actual |
 | Partituras | AlphaTab y biblioteca MusicXML | Crear actividades que reutilicen el reproductor |
@@ -36,7 +36,7 @@ Se incorpora `src/engines/music/musicTheory.ts` como capa de dominio ligera, no 
 - `pitchClassDistance`: distancia cromática.
 - `buildTriad`: construcción básica de tríadas.
 
-La API anterior `midiName` y `midiHz` de `pitch.ts` se conserva para no romper los módulos actuales.
+La API anterior `midiName` y `midiHz` de `pitch.ts` se conserva para no romper los módulos actuales. `StaffNote.vue` mantiene su propiedad `midi` y acepta además `spelling` cuando se necesita fijar una grafía concreta (por ejemplo, Re♭4 en lugar de Do♯4); la grafía explícita solo se utiliza si coincide con la altura MIDI indicada.
 
 ## Modelo de aprendizaje
 
@@ -83,6 +83,7 @@ Los formatos reutilizan visualizadores existentes: pentagrama, diapasón, audio,
 ## Alcance implementado hasta ahora
 
 - El diapasón existente acepta `startFret` y `endFret` para mostrar cualquier ventana válida de cinco trastes.
+- `StaffNote.vue` acepta una grafía explícita mediante `spelling`, sin romper los usos existentes que solo proporcionan `midi`.
 - La lección de relación pentagrama–diapasón utiliza la región principiante 1–5.
 - Se conserva la vista anterior de cuerdas al aire y trastes 1–5 como valor predeterminado para mantener compatibilidad.
 - No se altera el comportamiento de `StaffNote.vue`.
@@ -93,7 +94,7 @@ Los formatos reutilizan visualizadores existentes: pentagrama, diapasón, audio,
 ## Próximas etapas
 
 1. Incorporar un selector de regiones y ejercicios configurables para las ventanas del diapasón.
-2. Ampliar la escritura de notas en pentagrama para sostenidos/bemoles explícitos.
+2. Crear ejercicios pedagógicos de reconocimiento de notas alteradas usando la nueva propiedad `spelling` y el modelo común.
 3. Ampliar el banco de preguntas con etiquetas de nivel, área, tema y prerrequisitos.
 4. Incorporar armonía y reconocimiento de acordes reutilizando el modelo de notas.
 5. Ampliar ritmo y lectura con los motores existentes.
