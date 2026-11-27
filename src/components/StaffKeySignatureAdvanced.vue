@@ -49,7 +49,7 @@ const examples = {
     spelling: { letter: 'La', accidental: 1, octave: 5 },
     string: 1,
     fret: 6,
-    explanation: 'Si mayor añade La sostenido como quinto signo. La sostenido suena en la primera cuerda, traste 5.',
+    explanation: 'Si mayor añade La sostenido como quinto signo. La sostenido suena en la primera cuerda, traste 6.',
   },
   Ab: {
     name: 'La bemol mayor',
