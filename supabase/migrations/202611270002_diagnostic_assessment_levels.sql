@@ -122,6 +122,7 @@ as $$
 declare
   v_attempt public.diagnostic_attempts;
   v_question public.class_question_bank;
+  v_existing_answer text;
 begin
   select * into v_attempt
   from public.diagnostic_attempts
@@ -160,7 +161,13 @@ begin
     and selected_answer is null;
 
   if not found then
-    raise exception 'Ya respondiste esta pregunta.';
+    select selected_answer into v_existing_answer
+    from public.diagnostic_attempt_questions
+    where attempt_id = p_attempt_id and question_id = p_question_id;
+
+    if v_existing_answer is distinct from p_answer then
+      raise exception 'Ya respondiste esta pregunta con otra opción.';
+    end if;
   end if;
 
   return jsonb_build_object('accepted', true);
