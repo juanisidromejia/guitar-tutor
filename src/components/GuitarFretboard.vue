@@ -30,18 +30,21 @@ const regionIsValid = computed(() =>
   && props.startFret >= 0
   && props.endFret <= 24
   && props.endFret >= props.startFret
-  && props.endFret - props.startFret === 4,
+  && (props.endFret - props.startFret === 4 || (props.startFret === 0 && props.endFret === 5)),
 )
+const legacyOpenStringView = computed(() => props.startFret === 0 && props.endFret === 5)
 const frets = computed(() =>
   regionIsValid.value
-    ? Array.from({ length: 5 }, (_, index) => props.startFret + index)
+    ? Array.from({ length: legacyOpenStringView.value ? 6 : 5 }, (_, index) => props.startFret + index)
     : [],
 )
 
 const stringY = (index: number) => 35 + index * 35
-const fretCenterX = (fret: number) => fret === 0 ? 38 : 94 + (fret - props.startFret) * 112
+const fretCenterX = (fret: number) =>
+  fret === 0 ? 38 : 94 + (fret - Math.max(props.startFret, 1)) * 112
 const fretWireX = (fret: number) => fretCenterX(fret) + 56
-const fretHitboxX = (fret: number) => fretCenterX(fret) - 55
+const fretHitboxX = (fret: number) => fret === 0 ? 25 : fretCenterX(fret) - 55
+const fretHitboxWidth = (fret: number) => fret === 0 ? 26 : 110
 const stringWidth = (string: number) => string === 1 || string === 6 ? 2.8 : 1.6
 const markerFrets = [3, 5, 7, 9, 12, 15, 17, 19, 21, 24]
 
@@ -107,7 +110,7 @@ const selectedLabel = computed(() => {
             <rect
               :x="fretHitboxX(fret)"
               :y="stringY(index) - 15"
-              width="110"
+              :width="fretHitboxWidth(fret)"
               height="30"
               fill="transparent"
               class="cursor-pointer"
