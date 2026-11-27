@@ -2,6 +2,8 @@
 import { computed, ref } from 'vue'
 import { CheckCircle2, XCircle } from 'lucide-vue-next'
 import { playGuitarNote } from '../engines/audio/guitarSound'
+import StaffNote from './StaffNote.vue'
+import type { SpelledNote } from '../engines/music/musicTheory'
 
 type KeyExample = 'C' | 'G' | 'F'
 
@@ -49,6 +51,12 @@ const examples = {
 } as const
 
 const current = computed(() => examples[selectedKey.value])
+const currentSpelling = computed<SpelledNote>(() => selectedKey.value === 'F'
+  ? { letter: 'Si', accidental: -1, octave: 4 }
+  : selectedKey.value === 'G'
+    ? { letter: 'Fa', accidental: 1, octave: 5 }
+    : { letter: 'Fa', accidental: 0, octave: 5 },
+)
 const activeNote = ref(false)
 const answers = ref<Record<string, string>>({})
 const submitted = ref(false)
@@ -127,6 +135,7 @@ function playExample() {
             <text v-if="selectedKey === 'G'" x="112" y="42" font-size="34" fill="#176b5b">♯</text>
             <text v-if="selectedKey === 'F'" x="112" y="75" font-size="34" fill="#176b5b">♭</text>
           </svg>
+          <StaffNote :midi="current.writtenMidi" :spelling="currentSpelling" />
           <p class="text-center text-sm font-black text-[#176b5b]">{{ current.name }}</p>
           <p class="text-center text-xs text-[#718078]">{{ current.signature }}</p>
         </div>
