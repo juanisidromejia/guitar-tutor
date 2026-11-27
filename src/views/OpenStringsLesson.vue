@@ -23,6 +23,14 @@ const visitedFrets = ref<number[]>([])
 const fretNote = computed(() => midiName(strings[0].midi + selectedFret.value))
 const note = computed(() => midiName(selectedString.value.midi))
 const writtenNote = computed(() => midiName(selectedString.value.midi + 12))
+const naturalNotesByString = computed(() => strings.map(string => ({
+  ...string,
+  notes: [0, 1, 2, 3].map(fret => ({
+    fret,
+    midi: string.midi + fret,
+    note: midiName(string.midi + fret),
+  })).filter(item => !item.note.name.includes('♯')),
+})))
 
 function maybeComplete() {
   if (visited.value.length === strings.length && [0, 1, 2, 3].every(value => visitedFrets.value.includes(value))) complete(1)
@@ -35,10 +43,6 @@ function selectString(string: typeof strings[number]) {
   void playGuitarNote(string.midi, string.number)
 }
 
-function playNaturalNote(midi: number, string: number) {
-  void playGuitarNote(midi, string)
-}
-
 function selectFret(fret: number) {
   selectedFret.value = fret
   if (!visitedFrets.value.includes(fret)) visitedFrets.value.push(fret)
@@ -46,7 +50,9 @@ function selectFret(fret: number) {
   void playGuitarNote(strings[0].midi + fret, 1)
 }
 
-
+function playNaturalNote(midi: number, string: number) {
+  void playGuitarNote(midi, string)
+}
 </script>
 
 <template>
@@ -121,7 +127,6 @@ function selectFret(fret: number) {
           Al presionar una cuerda contra un traste, acortamos la parte que vibra. Cuanto más avanzamos hacia el cuerpo de la guitarra, más agudo es el sonido.
         </p>
       </div>
-
       <div class="rounded-xl bg-[#f7f4ed] p-3 sm:p-4">
         <p class="text-center text-xs font-bold uppercase tracking-wide text-[#8a795f]">Primera cuerda · Mi al aire</p>
         <div class="mt-3 grid grid-cols-4 gap-2">
@@ -143,13 +148,27 @@ function selectFret(fret: number) {
           <p class="mt-1 text-xs text-[#75827b]">Pulsa cada posición para escuchar cómo cambia la altura.</p>
         </div>
       </div>
+      <div class="mt-3 grid gap-2 sm:grid-cols-2">
+        <div class="rounded-xl bg-[#edf4ee] p-3 text-xs leading-5 text-[#567267]">
+          <b>Un traste = un semitono.</b>
+          Cada vez que avanzas un traste, la nota sube un semitono. Mi–Fa es un semitono; Fa–Sol son dos.
+        </div>
+        <div class="rounded-xl bg-[#edf4ee] p-3 text-xs leading-5 text-[#567267]">
+          <b>Dos trastes = un tono.</b>
+          Un tono equivale a dos semitonos. Por eso, desde Fa hasta Sol avanzamos dos trastes: Fa, Fa♯, Sol.
+        </div>
+      </div>
+      <p class="mt-3 text-xs leading-5 text-[#788780]">
+        Observa que entre Mi y Fa no aparece una nota natural intermedia. En cambio, entre Fa y Sol encontramos Fa♯. Más adelante aprenderás cómo se escriben y utilizan los sostenidos y bemoles.
+      </p>
+    </section>
 
-      <section class="panel mt-4 p-3 sm:p-4">
+    <section class="panel mt-4 p-3 sm:p-4">
       <div class="mb-3">
         <p class="eyebrow">Exploración guiada · Primera posición</p>
         <h2 class="text-lg font-black">Conoce las notas naturales</h2>
         <p class="mt-1 text-sm leading-5 text-[#788780]">
-          Ahora observa cómo aparecen las notas naturales en las seis cuerdas, desde el sonido al aire hasta el tercer traste. Pulsa cada nota para escucharla.
+          Observa cómo aparecen las notas naturales en las seis cuerdas, desde el sonido al aire hasta el tercer traste. Pulsa cada nota para escucharla.
         </p>
       </div>
       <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
@@ -174,21 +193,6 @@ function selectFret(fret: number) {
     </section>
 
     <div class="mt-3 grid gap-2 sm:grid-cols-2">
-        <div class="rounded-xl bg-[#edf4ee] p-3 text-xs leading-5 text-[#567267]">
-          <b>Un traste = un semitono.</b>
-          Cada vez que avanzas un traste, la nota sube un semitono. Mi–Fa es un semitono; Fa–Sol son dos.
-        </div>
-        <div class="rounded-xl bg-[#edf4ee] p-3 text-xs leading-5 text-[#567267]">
-          <b>Dos trastes = un tono.</b>
-          Un tono equivale a dos semitonos. Por eso, desde Fa hasta Sol avanzamos dos trastes: Fa, Fa♯, Sol.
-        </div>
-      </div>
-      <p class="mt-3 text-xs leading-5 text-[#788780]">
-        Observa que entre Mi y Fa no aparece una nota natural intermedia. En cambio, entre Fa y Sol encontramos Fa♯. Más adelante aprenderás cómo se escriben y utilizan los sostenidos y bemoles.
-      </p>
-    </section>
-
-    <div class="mt-3 grid gap-2 sm:grid-cols-2">
       <div class="rounded-xl bg-[#edf4ee] p-3 text-xs leading-5 text-[#567267]">
         <b>¿Por qué hay dos cuerdas Mi?</b>
         La sexta y la primera tienen el mismo nombre, pero la primera suena dos octavas más aguda. Por ejemplo, la primera cuerda al aire suena Mi4 y se escribe Mi5 en el pentagrama de guitarra.
@@ -199,9 +203,9 @@ function selectFret(fret: number) {
       </div>
     </div>
 
-    <div v-if="visited.length === 6" class="mt-3 flex items-center gap-2 rounded-xl bg-[#e9f5ed] p-3 text-sm font-semibold text-[#226447]">
+    <div v-if="visited.length === 6 && [0, 1, 2, 3].every(value => visitedFrets.includes(value))" class="mt-3 flex items-center gap-2 rounded-xl bg-[#e9f5ed] p-3 text-sm font-semibold text-[#226447]">
       <CheckCircle2 :size="19" />
-      ¡Has explorado las seis cuerdas! Ya conoces sus notas al aire.
+      ¡Has explorado las seis cuerdas y las primeras posiciones! Ya conoces las cuerdas al aire y cómo suben las notas.
     </div>
   </div>
 </template>
