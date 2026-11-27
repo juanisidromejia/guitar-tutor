@@ -1,24 +1,65 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { ArrowRight, CheckCircle2, XCircle } from 'lucide-vue-next'
 import GuitarFretboard from '../components/GuitarFretboard.vue'
 import StaffNote from '../components/StaffNote.vue'
 import { fretMidi } from '../engines/guitar/fretboard'
 import { playGuitarNote } from '../engines/audio/guitarSound'
 import { useProgress } from '../composables/useProgress'
+import { DEFAULT_FRETBOARD_REGIONS } from '../types/learning'
 
 const { record, complete } = useProgress()
-const notes = [60, 62, 64, 65, 67, 69]
+const regionId = ref('beginner-1-5')
+const selectedRegion = computed(() =>
+  DEFAULT_FRETBOARD_REGIONS.find(region => region.id === regionId.value)
+  ?? DEFAULT_FRETBOARD_REGIONS[0],
+)
+
+/**
+ * El pentagrama muestra la nota escrita para guitarra.
+ * La posición física se calcula una octava por debajo (MIDI - 12).
+ * Los objetivos se derivan de las posiciones reales disponibles en la región.
+ */
+const writtenNotePool = computed(() => {
+  const pitches = new Set<number>()
+  for (let string = 1; string <= 6; string++) {
+    for (let fret = selectedRegion.value.startFret; fret <= selectedRegion.value.endFret; fret++) {
+      pitches.add(fretMidi(string, fret) + 12)
+    }
+  }
+  return [...pitches].sort((a, b) => a - b)
+})
+
 const round = ref(1)
-const target = ref(64)
+const target = ref(writtenNotePool.value[0] ?? 60)
 const selected = ref<{ string: number; fret: number } | null>(null)
 const feedback = ref<'correct' | 'wrong' | null>(null)
+const recentTargets = ref<number[]>([])
+
+function chooseNextTarget() {
+  const pool = writtenNotePool.value
+  const available = pool.filter(note => !recentTargets.value.includes(note))
+  const choices = available.length ? available : pool
+  const nextTarget = choices[Math.floor(Math.random() * choices.length)] ?? pool[0] ?? 60
+  target.value = nextTarget
+  recentTargets.value = [...recentTargets.value, nextTarget].slice(-Math.max(1, Math.floor(pool.length / 2)))
+}
+
+function resetExercise() {
+  round.value = 1
+  selected.value = null
+  feedback.value = null
+  recentTargets.value = []
+  chooseNextTarget()
+}
+
+watch(regionId, resetExercise)
 
 function next() {
   round.value++
-  target.value = notes[(round.value * 5 + 2) % notes.length]
   selected.value = null
   feedback.value = null
+  chooseNextTarget()
 }
 
 function choose(position: { string: number; fret: number; midi: number }) {
@@ -30,24 +71,35 @@ function choose(position: { string: number; fret: number; midi: number }) {
   record(isCorrect)
   feedback.value = isCorrect ? 'correct' : 'wrong'
 
-  if (isCorrect) {
-    complete(3)
-  }
+  if (isCorrect) complete(3)
 }
-
 </script>
 
 <template>
   <div class="page">
     <div class="mb-3">
-      <p class="eyebrow">Lectura musical · Nivel 1</p>
+      <p class="eyebrow">Lectura musical · Nivel {{ selectedRegion.level === 'beginner' ? '1' : selectedRegion.level === 'intermediate' ? '2' : '3' }}</p>
       <h1 class="mt-0.5 text-xl font-black">Notas en el pentagrama</h1>
       <p class="mt-0.5 max-w-2xl text-xs leading-4 text-[#788780]">
-        Lee la nota en clave de sol y encuentra su lugar en el diapasón de la guitarra.
+        Lee la nota en clave de sol y encuentra su lugar en el diapasón. Los ejercicios recorren una extensión más amplia de notas y evitan repetirlas continuamente.
       </p>
     </div>
 
     <section class="panel p-3 sm:p-4">
+      <div class="mb-3 grid gap-2 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)] sm:items-end">
+        <label class="block">
+          <span class="mb-1 block text-[11px] font-bold uppercase tracking-wide text-[#718078]">Nivel y región del diapasón</span>
+          <select v-model="regionId" class="w-full rounded-lg border border-[#dce5dc] bg-white px-3 py-2 text-sm font-semibold text-[#365c4c]">
+            <option v-for="region in DEFAULT_FRETBOARD_REGIONS" :key="region.id" :value="region.id">
+              {{ region.level === 'beginner' ? 'Principiante' : region.level === 'intermediate' ? 'Intermedio' : 'Avanzado' }} · Trastes {{ region.startFret }}–{{ region.endFret }}
+            </option>
+          </select>
+        </label>
+        <p class="rounded-lg bg-[#f3f7f2] px-3 py-2 text-xs leading-5 text-[#718078]">
+          {{ writtenNotePool.length }} alturas disponibles en esta región. La nota escrita se convierte a sonido real una octava más grave para comprobar la posición.
+        </p>
+      </div>
+
       <div class="mb-2 flex items-center justify-between gap-3">
         <div>
           <p class="eyebrow">Lee y encuentra</p>
@@ -58,7 +110,7 @@ function choose(position: { string: number; fret: number; midi: number }) {
 
       <div class="grid grid-cols-1 items-center gap-3 lg:grid-cols-[minmax(230px,0.75fr)_minmax(0,1.5fr)] lg:gap-5">
         <div class="rounded-xl bg-[#f5f8f4] p-2">
-          <p class="mb-0.5 text-center text-[10px] font-bold uppercase tracking-wide text-[#718078]">Nota en clave de sol</p>
+          <p class="mb-0.5 text-center text-[10px] font-bold uppercase tracking-wide text-[#718078]">Nota escrita para guitarra</p>
           <StaffNote :midi="target" />
           <p class="mt-0.5 text-center text-[11px] font-semibold text-[#176b5b]">
             Busca la nota en el instrumento.
@@ -68,9 +120,15 @@ function choose(position: { string: number; fret: number; midi: number }) {
         <div class="min-w-0">
           <div class="mb-1 flex items-center justify-between gap-2">
             <h3 class="text-sm font-extrabold">Diapasón de guitarra</h3>
-            <span class="text-[10px] text-[#829087]">Cuerdas 1–6 · Trastes 1–5</span>
+            <span class="text-[10px] text-[#829087]">Trastes {{ selectedRegion.startFret }}–{{ selectedRegion.endFret }}</span>
           </div>
-          <GuitarFretboard :start-fret="1" :end-fret="5" :selected="selected" :disabled="feedback === 'correct'" @select="choose" />
+          <GuitarFretboard
+            :start-fret="selectedRegion.startFret"
+            :end-fret="selectedRegion.endFret"
+            :selected="selected"
+            :disabled="feedback === 'correct'"
+            @select="choose"
+          />
         </div>
       </div>
 
@@ -94,7 +152,7 @@ function choose(position: { string: number; fret: number; midi: number }) {
     </section>
 
     <div class="mt-2 rounded-xl bg-[#edf4ee] p-2.5 text-[11px] leading-4 text-[#567267]">
-      <b>Consejo:</b> la nota del pentagrama es la nota escrita. Para encontrarla en la guitarra, busca el sonido una octava más grave. Por ejemplo, un Sol4 escrito corresponde al Sol3 que suena en la tercera cuerda al aire.
+      <b>Recuerda:</b> el pentagrama de guitarra escribe las notas una octava por encima de su sonido real. Por ejemplo, un Sol4 escrito corresponde al Sol3 que suena en la tercera cuerda al aire.
     </div>
   </div>
 </template>
