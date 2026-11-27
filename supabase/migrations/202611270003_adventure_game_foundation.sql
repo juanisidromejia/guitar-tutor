@@ -291,11 +291,18 @@ end $$;
 
 create or replace function public.adventure_heartbeat(p_game_id uuid)
 returns void language plpgsql security definer set search_path=public
-as $$
+as $
+declare v_player public.adventure_players;
 begin
- update public.adventure_players set last_seen_at=now(),disconnected_at=null where game_id=p_game_id and user_id=auth.uid();
+ select * into v_player from public.adventure_players where game_id=p_game_id and user_id=auth.uid() for update;
  if not found then raise exception 'No perteneces a esta partida.'; end if;
-end $$;
+ if v_player.last_seen_at < now()-interval '3 minutes' and not v_player.eliminated then
+  update public.adventure_players set eliminated=true,errors=3,disconnected_at=now() where id=v_player.id;
+  insert into public.adventure_events(game_id,actor_player_id,event_type,message) values(p_game_id,v_player.id,'reconnect_expired',v_player.nickname||' perdió la conexión durante más de tres minutos y quedó fuera de la expedición.');
+  raise exception 'Se agotó el tiempo de reconexión de tres minutos.';
+ end if;
+ update public.adventure_players set last_seen_at=now(),disconnected_at=null where id=v_player.id;
+end $;
 
 create or replace function public.adventure_teacher_action(p_game_id uuid,p_action text,p_payload jsonb default '{}'::jsonb)
 returns jsonb language plpgsql security definer set search_path=public
