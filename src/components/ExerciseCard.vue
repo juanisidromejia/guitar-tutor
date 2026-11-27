@@ -16,11 +16,21 @@ const selectedRegion = computed(() =>
 )
 const targetPool = computed(() => {
   const pitches = new Set<number>()
+  const naturalPitchClasses = new Set([0, 2, 4, 5, 7, 9, 11])
+
   for (let string = 1; string <= 6; string++) {
     for (let fret = selectedRegion.value.startFret; fret <= selectedRegion.value.endFret; fret++) {
-      pitches.add(fretMidi(string, fret))
+      const midi = fretMidi(string, fret)
+      const pitchClass = ((midi % 12) + 12) % 12
+
+      // En principiante consolidamos primero las siete notas naturales.
+      // Los niveles siguientes incorporan también las alturas cromáticas.
+      if (selectedRegion.value.level !== 'beginner' || naturalPitchClasses.has(pitchClass)) {
+        pitches.add(midi)
+      }
     }
   }
+
   return [...pitches].sort((a, b) => a - b)
 })
 
@@ -86,10 +96,10 @@ function choose(position: { string: number; fret: number; midi: number }) {
       </label>
       <p class="rounded-lg bg-[#f3f7f2] px-3 py-2 text-xs leading-5 text-[#718078]">
         {{ selectedRegion.level === 'beginner'
-          ? 'Comienza ubicando notas naturales en la primera posición.'
+          ? 'Trabaja las siete notas naturales. Los sostenidos y bemoles se incorporarán después de dominar esta etapa.'
           : selectedRegion.level === 'intermediate'
-            ? 'Amplía tu orientación hacia la región media del mástil.'
-            : 'Practica el desplazamiento por distintas posiciones del diapasón.' }}
+            ? 'Amplía tu orientación hacia la región media del mástil e incorpora todas las alturas cromáticas.'
+            : 'Practica todas las alturas cromáticas y el desplazamiento por distintas posiciones del diapasón.' }}
       </p>
     </div>
 
