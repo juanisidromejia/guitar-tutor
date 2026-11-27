@@ -103,13 +103,15 @@ async function submit() {
   busy.value = true
   error.value = ''
   try {
-    const { error: rpcError } = await requireSupabase().rpc('submit_diagnostic_answer', {
-      p_attempt_id: attemptId.value,
-      p_question_id: current.value.id,
-      p_answer: selected.value,
-    })
-    if (rpcError) throw rpcError
-    answers.value[current.value.id] = selected.value
+    if (answers.value[current.value.id] !== selected.value) {
+      const { error: rpcError } = await requireSupabase().rpc('submit_diagnostic_answer', {
+        p_attempt_id: attemptId.value,
+        p_question_id: current.value.id,
+        p_answer: selected.value,
+      })
+      if (rpcError) throw rpcError
+      answers.value[current.value.id] = selected.value
+    }
 
     if (index.value === questions.value.length - 1) {
       const { data, error: finishError } = await requireSupabase().rpc('finish_diagnostic_attempt', {
