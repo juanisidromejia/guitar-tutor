@@ -34,7 +34,6 @@ const targetMidi = computed(() => fretMidi(current.value.string, current.value.f
 const targetName = computed(() => midiName(targetMidi.value))
 const sameCurrent = computed(() => sameNoteLessons[sameIndex.value])
 const sameTargetMidi = computed(() => fretMidi(sameCurrent.value.target.string, sameCurrent.value.target.fret))
-const sameTargetName = computed(() => midiName(sameTargetMidi.value))
 
 function choose(position: { string: number; fret: number; midi: number }) {
   if (feedback.value === 'correct' || finished.value) return
