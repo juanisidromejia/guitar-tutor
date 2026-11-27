@@ -94,9 +94,10 @@ function noteX(fret: number) { return fret === 0 ? 58 : 77 + (fret - 1) * 90 }
             <g stroke="#b99b76" stroke-width="2"><path d="M 112 24 V 198 M 202 24 V 198 M 292 24 V 198 M 378 24 V 198" /></g>
             <g stroke="#a6a69c"><path v-for="string in 6" :key="string" :d="'M 42 ' + (34 + (string - 1) * 31) + ' H 378'" :stroke-width="string === 1 || string === 6 ? 2.5 : 1.5" /></g>
             <g fill="#68766e" font-size="10" text-anchor="end"><text v-for="string in 6" :key="string" x="34" :y="38 + (string - 1) * 31">{{ string }}</text></g>
+            <text v-if="active.id === 'root'" x="58" y="193" fill="#9b5540" font-size="17" font-weight="bold" text-anchor="middle">×</text>
             <g v-for="position in active.positions" :key="position.string + '-' + position.fret">
-              <circle :cx="noteX(position.fret)" :cy="34 + (6 - position.string) * 31" r="12" fill="#176b5b" stroke="white" stroke-width="2" />
-              <text :x="noteX(position.fret)" :y="38 + (6 - position.string) * 31" fill="white" font-size="10" font-weight="bold" text-anchor="middle">{{ degree(position.tone) }}</text>
+              <circle :cx="noteX(position.fret)" :cy="34 + (position.string - 1) * 31" r="12" fill="#176b5b" stroke="white" stroke-width="2" />
+              <text :x="noteX(position.fret)" :y="38 + (position.string - 1) * 31" fill="white" font-size="10" font-weight="bold" text-anchor="middle">{{ degree(position.tone) }}</text>
             </g>
             <g fill="#718078" font-size="10" text-anchor="middle"><text x="58" y="216">Al aire</text><text x="77" y="15">Tr. 1</text><text x="167" y="15">Tr. 2</text><text x="257" y="15">Tr. 3</text></g>
           </svg>
