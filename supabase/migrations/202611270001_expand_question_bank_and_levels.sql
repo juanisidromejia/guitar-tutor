@@ -11,6 +11,9 @@ alter table public.sessions
   add column if not exists difficulty text not null default 'beginner'
   check (difficulty in ('beginner','intermediate','advanced','mixed'));
 
+-- Students may read the difficulty label, but never the answer key.
+grant select (difficulty) on public.session_questions to authenticated;
+
 update public.class_question_bank set difficulty='beginner';
 
 insert into public.class_question_bank
@@ -98,7 +101,7 @@ begin
   if p_mode not in ('self_paced','live') then
     raise exception 'Modalidad no válida.';
   end if;
-  if p_difficulty not in ('beginner','intermediate','advanced','mixed') then
+  if p_difficulty is null or p_difficulty not in ('beginner','intermediate','advanced','mixed') then
     raise exception 'Nivel de dificultad no válido.';
   end if;
   if char_length(trim(p_title)) < 1 or char_length(trim(p_title)) > 90 then
