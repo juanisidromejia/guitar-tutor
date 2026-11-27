@@ -292,6 +292,7 @@ end $$;
 create or replace function public.adventure_heartbeat(p_game_id uuid)
 returns void language plpgsql security definer set search_path=public
 as $
+
 declare v_player public.adventure_players;
 begin
  select * into v_player from public.adventure_players where game_id=p_game_id and user_id=auth.uid() for update;
