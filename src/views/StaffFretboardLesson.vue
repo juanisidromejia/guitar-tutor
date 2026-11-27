@@ -9,6 +9,7 @@ import StaffAccidentalMelody from '../components/StaffAccidentalMelody.vue'
 import StaffKeySignatureIntro from '../components/StaffKeySignatureIntro.vue'
 import StaffKeySignaturePractice from '../components/StaffKeySignaturePractice.vue'
 import StaffKeySignatureAdvanced from '../components/StaffKeySignatureAdvanced.vue'
+import StaffKeySignatureComplete from '../components/StaffKeySignatureComplete.vue'
 import { fretMidi } from '../engines/guitar/fretboard'
 import { playGuitarNote } from '../engines/audio/guitarSound'
 import { useProgress } from '../composables/useProgress'
@@ -97,6 +98,7 @@ function choose(position: { string: number; fret: number; midi: number }) {
     <StaffKeySignatureIntro />
     <StaffKeySignaturePractice />
     <StaffKeySignatureAdvanced />
+    <StaffKeySignatureComplete />
 
     <section class="panel p-3 sm:p-4">
       <div class="mb-3 grid gap-2 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)] sm:items-end">
