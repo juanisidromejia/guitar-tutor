@@ -82,7 +82,11 @@ const selectedLabel = computed(() => {
         <rect v-if="startFret === 0" x="27" y="17" width="12" height="207" rx="3" fill="#8a6748" />
 
         <g stroke="#b99b76" stroke-width="2">
-          <path v-for="fret in frets" :key="fret" :d="`M ${fretWireX(fret)} 18 V 223`" />
+          <path
+            v-for="fret in frets.filter(value => value > 0)"
+            :key="fret"
+            :d="`M ${fretWireX(fret)} 18 V 223`"
+          />
         </g>
 
         <g fill="#806b55" font-size="12" text-anchor="middle">
