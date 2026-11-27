@@ -38,7 +38,7 @@ const questionBank = computed<Question[]>(() => {
       : `${signature.count} ${signature.family}`
     const countOptions = signature.count === 0
       ? ['0', '1', '2', '3']
-      : shuffle([...new Set([String(signature.count), String(Math.max(0, signature.count - 1)), String(Math.min(7, signature.count + 1)), String((signature.count + 2) % 8)])]).slice(0, 4)
+      : shuffle([String(signature.count), ...shuffle(Array.from({ length: 8 }, (_, value) => String(value)).filter(value => value !== String(signature.count))).slice(0, 3)])
     bank.push({
       prompt: `¿Qué tonalidad mayor corresponde a una armadura con ${label}?`,
       options: shuffle([signature.tonic, ...shuffle(signatures.filter(item => item.tonic !== signature.tonic).map(item => item.tonic)).slice(0, 3)]),
@@ -150,7 +150,7 @@ start()
             :disabled="checked"
             @click="chosen = option"
           >
-            {{ option }}{{ current?.prompt.startsWith('¿Cuántas') ? ' alteraciones' : '' }}
+            {{ option }}{{ current?.prompt.startsWith('¿Cuántas') ? (option === '1' ? ' alteración' : ' alteraciones') : '' }}
           </button>
         </div>
         <div v-if="checked" class="mt-3 rounded-lg p-3" :class="chosen === current?.correct ? 'bg-[#e9f5ed] text-[#226447]' : 'bg-[#fff1e9] text-[#a14f2d]'">
