@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ArrowRight, CheckCircle2, Music2, Sparkles, Users, Castle } from 'lucide-vue-next'
+import { ArrowRight, CheckCircle2, Music2, Sparkles, Users } from 'lucide-vue-next'
 import { RouterLink } from 'vue-router'
 import { useProgress } from '../composables/useProgress'
 const { data, accuracy } = useProgress()
@@ -10,7 +10,6 @@ const modules = [
   { id: '04', title: 'Lectura rítmica', description: 'Comprende el pulso, las figuras, los silencios y los primeros patrones rítmicos.', tag: 'Ritmo y lectura', to: '/lectura-ritmica' },
   { id: '05', title: 'Del papel a la guitarra', description: 'Lee pequeñas frases musicales y tócalas en el instrumento.', tag: 'Lectura e interpretación', to: '/del-papel-a-la-guitarra', progressId: 4 },
   { id: '06', title: 'Pruebas y evaluaciones', description: 'Comprueba tus conocimientos de pentagrama, diapasón y ritmo.', tag: 'Evaluación', to: '/evaluacion' },
-  { id: '07', title: 'Catacumbas de la guitarra', description: 'Resuelve acertijos musicales, avanza por salas y compite por el tesoro.', tag: 'Aventura multijugador', to: '/aventura' },
 ]
 </script>
 <template>
@@ -24,6 +23,6 @@ const modules = [
     <section class="mt-9"><div class="mb-4"><p class="eyebrow">Tu camino musical</p><h2 class="mt-1 text-2xl font-black">Ruta de aprendizaje</h2></div><div class="grid gap-3 sm:grid-cols-2">
       <RouterLink v-for="module in modules" :key="module.id" :to="module.to" class="panel group flex gap-4 p-4 transition hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#176b5b] sm:p-5"><span class="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#edf4ee] text-base font-black text-[#39765c]">{{module.id}}</span><div class="min-w-0 flex-1"><div class="flex items-center gap-2"><h3 class="font-extrabold">{{module.title}}</h3><CheckCircle2 v-if="module.progressId && data.completed.includes(module.progressId)" class="shrink-0 text-[#4c9c7c]" :size="16"/></div><p class="mt-1 text-sm leading-5 text-[#7b8981]">{{module.description}}</p><span class="mt-3 inline-block text-[10px] font-bold uppercase tracking-wider text-[#5b8b73]">{{module.tag}}</span></div></RouterLink>
     </div></section>
-    <section class="panel mt-7 flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6"><div class="flex items-start gap-3"><span class="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#edf4ee] text-[#34795d]"><Users/></span><div><p class="font-extrabold">Sesiones de clase</p><p class="mt-1 max-w-xl text-sm text-[#718078]">Participa en una evaluación con tu docente o crea sesiones interactivas para tu grupo.</p></div></div><div class="flex flex-wrap gap-2"><RouterLink to="/unirse" class="secondary">Ingresar con código</RouterLink><RouterLink to="/docente/sesiones" class="primary">Panel docente <ArrowRight :size="16"/></RouterLink></div></section>
+    <section class="panel mt-7 flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6"><div class="flex items-start gap-3"><span class="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#edf4ee] text-[#34795d]"><Users/></span><div><p class="font-extrabold">Sesiones de clase</p><p class="mt-1 max-w-xl text-sm text-[#718078]">Participa en una actividad con tu docente o crea sesiones interactivas para tu grupo.</p></div></div><div class="flex flex-wrap gap-2"><RouterLink to="/unirse" class="secondary">Ingresar con código</RouterLink><RouterLink to="/docente/sesiones" class="primary">Panel docente <ArrowRight :size="16"/></RouterLink></div></section>
   </div>
 </template>
