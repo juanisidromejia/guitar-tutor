@@ -68,9 +68,9 @@ function choose(position: { string: number; fret: number; midi: number }) {
         <div class="min-w-0">
           <div class="mb-1 flex items-center justify-between gap-2">
             <h3 class="text-sm font-extrabold">Diapasón de guitarra</h3>
-            <span class="text-[10px] text-[#829087]">Cuerdas 1–6 · Trastes 0–5</span>
+            <span class="text-[10px] text-[#829087]">Cuerdas 1–6 · Trastes 1–5</span>
           </div>
-          <GuitarFretboard :selected="selected" :disabled="feedback === 'correct'" @select="choose" />
+          <GuitarFretboard :start-fret="1" :end-fret="5" :selected="selected" :disabled="feedback === 'correct'" @select="choose" />
         </div>
       </div>
 
