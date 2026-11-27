@@ -48,7 +48,7 @@ const examples = {
     soundingMidi: 70,
     spelling: { letter: 'La', accidental: 1, octave: 5 },
     string: 1,
-    fret: 5,
+    fret: 6,
     explanation: 'Si mayor añade La sostenido como quinto signo. La sostenido suena en la primera cuerda, traste 5.',
   },
   Ab: {
