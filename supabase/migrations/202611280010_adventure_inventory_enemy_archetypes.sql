@@ -65,7 +65,7 @@ returns trigger
 language plpgsql
 security definer
 set search_path=public
-as $
+as $$
 begin
  insert into public.adventure_challenges(game_id,room_index,difficulty,variant_key,prompt,options,correct_answer,explanation)
  values
@@ -81,7 +81,7 @@ begin
  (new.id,4,'advanced','g-chord-f','¿Qué acorde cumple la función dominante en Sol mayor?','["Do mayor","Re mayor","Mi menor","La menor"]'::jsonb,'Re mayor','Re mayor es el acorde de dominante (V) en Sol mayor.');
  return new;
 end;
-$;
+$$;
 
 drop trigger if exists seed_adventure_enemy_challenges_after_game on public.adventure_games;
 create trigger seed_adventure_enemy_challenges_after_game
@@ -96,7 +96,7 @@ language plpgsql
 stable
 security definer
 set search_path=public
-as $
+as $$
 declare v_result jsonb;
 begin
  if not public.is_adventure_member(p_game_id) and not public.is_adventure_owner(p_game_id) then
@@ -118,7 +118,7 @@ begin
 
  return v_result;
 end;
-$;
+$$;
 
 revoke all on function public.adventure_get_enemies(uuid) from public,anon;
 grant execute on function public.adventure_get_enemies(uuid) to authenticated;
