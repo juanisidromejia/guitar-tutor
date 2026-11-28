@@ -1,5 +1,5 @@
 import { requireSupabase } from '../../services/supabase'
-import type { AdventureAnswerResult, AdventureChallenge, AdventureDifficulty, AdventureGame, AdventureJoinResult, AdventurePlayer, AdventureEvent, AdventureInventoryItem } from './types'
+import type { AdventureAnswerResult, AdventureChallenge, AdventureDifficulty, AdventureGame, AdventureJoinResult, AdventurePlayer, AdventureEvent, AdventureInventoryItem, AdventureEnemy, AdventurePlayerState } from './types'
 
 const db = () => requireSupabase()
 export async function createAdventure(title:string,difficulty:AdventureDifficulty) {
@@ -35,6 +35,16 @@ export async function teacherAction(gameId:string,action:string,payload:Record<s
   if(error) throw error
   return data
 }
+export async function loadAdventurePlayerState(gameId:string) {
+  const {data,error}=await db().rpc('adventure_get_player_state',{p_game_id:gameId})
+  if(error) throw error
+  return data as AdventurePlayerState
+}
+export async function loadAdventureEnemies(gameId:string) {
+  const {data,error}=await db().from('adventure_enemies').select('id,room_index,name,weakness,health,max_health,status').eq('game_id',gameId).order('created_at',{ascending:false})
+  if(error) throw error
+  return (data??[]) as AdventureEnemy[]
+}
 export async function loadAdventurePlayers(gameId:string) {
   const {data,error}=await db().from('adventure_players').select('id,nickname,room_index,errors,eliminated,finished_at,last_seen_at').eq('game_id',gameId).order('joined_at')
   if(error) throw error
@@ -54,8 +64,9 @@ export function subscribeAdventure(gameId:string,onChange:()=>void) {
   return db().channel('adventure-'+gameId)
     .on('postgres_changes',{event:'*',schema:'public',table:'adventure_players',filter:'game_id=eq.'+gameId},onChange)
     .on('postgres_changes',{event:'*',schema:'public',table:'adventure_events',filter:'game_id=eq.'+gameId},onChange)
+    .on('postgres_changes',{event:'*',schema:'public',table:'adventure_enemies',filter:'game_id=eq.'+gameId},onChange)
     .on('postgres_changes',{event:'*',schema:'public',table:'adventure_games',filter:'id=eq.'+gameId},onChange)
     .subscribe()
 }
 export function removeAdventureSubscription(channel:ReturnType<typeof subscribeAdventure>) { void db().removeChannel(channel) }
-export type { AdventureChallenge, AdventureDifficulty, AdventureGame, AdventureJoinResult, AdventurePlayer, AdventureEvent, AdventureInventoryItem }
+export type { AdventureChallenge, AdventureDifficulty, AdventureGame, AdventureJoinResult, AdventurePlayer, AdventureEvent, AdventureInventoryItem, AdventureEnemy, AdventurePlayerState }
