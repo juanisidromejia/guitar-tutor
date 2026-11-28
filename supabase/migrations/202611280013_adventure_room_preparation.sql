@@ -92,11 +92,15 @@ begin
   end if;
 
   for v_enemy_number in 1..v_enemy_count loop
-   v_enemy_difficulty:=case
-    when v_offset=1 and v_base_difficulty='beginner' then 'intermediate'
-    when v_offset=1 and v_base_difficulty='intermediate' then 'advanced'
-    when v_offset=1 and v_base_difficulty='advanced' then 'advanced'
-    else v_base_difficulty end;
+   if p_difficulty='mixed' and v_offset=0 then
+    v_enemy_difficulty:=(array['beginner','intermediate','advanced'])[1+floor(random()*3)::integer];
+   elsif v_offset=1 and v_base_difficulty='beginner' then
+    v_enemy_difficulty:='intermediate';
+   elsif v_offset=1 and v_base_difficulty='intermediate' then
+    v_enemy_difficulty:='advanced';
+   else
+    v_enemy_difficulty:=v_base_difficulty;
+   end if;
 
    if v_enemy_difficulty='beginner' then
     v_enemy_type:='skeleton';v_enemy_name:='Esqueleto del pentagrama';v_weakness:='Reconocimiento de notas y figuras musicales';v_hp:=2;
