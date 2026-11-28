@@ -32,6 +32,42 @@ where e.challenge_id is null;
 create index if not exists adventure_enemies_challenge_idx
   on public.adventure_enemies(challenge_id);
 
+
+-- Challenges are intentionally not directly selectable by authenticated clients.
+-- Expose only the prompt/options attached to enemies through a membership-checked RPC.
+create or replace function public.adventure_get_enemies(p_game_id uuid)
+returns jsonb
+language plpgsql
+stable
+security definer
+set search_path=public
+as $
+declare v_result jsonb;
+begin
+ if not public.is_adventure_member(p_game_id) and not public.is_adventure_owner(p_game_id) then
+  raise exception 'No formas parte de esta expedición.';
+ end if;
+
+ select coalesce(jsonb_agg(
+  jsonb_build_object(
+   'id',e.id,'room_index',e.room_index,'name',e.name,'weakness',e.weakness,
+   'enemy_type',e.enemy_type,'difficulty',e.difficulty,
+   'health',e.health,'max_health',e.max_health,'status',e.status,
+   'challenge',case when c.id is null then null else jsonb_build_object('prompt',c.prompt,'options',c.options) end
+  ) order by e.created_at desc
+ ),'[]'::jsonb)
+ into v_result
+ from public.adventure_enemies e
+ left join public.adventure_challenges c on c.id=e.challenge_id
+ where e.game_id=p_game_id;
+
+ return v_result;
+end;
+$;
+
+revoke all on function public.adventure_get_enemies(uuid) from public,anon;
+grant execute on function public.adventure_get_enemies(uuid) to authenticated;
+
 -- The student can consume a health potion. The server validates ownership,
 -- quantity and current health, then records the action in the shared log.
 create or replace function public.use_adventure_item(
