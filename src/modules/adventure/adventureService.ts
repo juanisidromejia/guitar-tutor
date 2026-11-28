@@ -1,7 +1,10 @@
 import { requireSupabase } from '../../services/supabase'
+import type { SupabaseClient } from '@supabase/supabase-js'
 import type { AdventureAnswerResult, AdventureChallenge, AdventureDifficulty, AdventureGame, AdventureJoinResult, AdventurePlayer, AdventureEvent, AdventureInventoryItem, AdventureEnemy, AdventurePlayerState } from './types'
 
-const db = () => requireSupabase()
+let adventureClient: SupabaseClient | null = null
+export function setAdventureSupabase(client: SupabaseClient | null) { adventureClient = client }
+const db = () => adventureClient ?? requireSupabase()
 export async function createAdventure(title:string,difficulty:AdventureDifficulty) {
   const {data,error}=await db().rpc('create_adventure_game',{p_title:title,p_difficulty:difficulty})
   if(error) throw error
