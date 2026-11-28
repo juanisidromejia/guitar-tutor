@@ -51,7 +51,7 @@ export async function loadAdventurePlayerState(gameId:string) {
   return data as AdventurePlayerState
 }
 export async function loadAdventureEnemies(gameId:string) {
-  const {data,error}=await db().from('adventure_enemies').select('id,room_index,name,weakness,enemy_type,difficulty,health,max_health,status,challenge:adventure_challenges(prompt,options)').eq('game_id',gameId).order('created_at',{ascending:false})
+  const {data,error}=await db().rpc('adventure_get_enemies',{p_game_id:gameId})
   if(error) throw error
   return (data??[]) as AdventureEnemy[]
 }
