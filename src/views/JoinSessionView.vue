@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
-import { useRoute, RouterLink } from 'vue-router'
+import { useRoute, useRouter, RouterLink } from 'vue-router'
 import { ArrowLeft, CheckCircle2, Clock3, Trophy, Users } from 'lucide-vue-next'
 import StaffNote from '../components/StaffNote.vue'
 import { requireSupabase, isSupabaseConfigured } from '../services/supabase'
 type Difficulty='beginner'|'intermediate'|'advanced'|'mixed'
-type Session={id:string;title:string;code:string;mode:'self_paced'|'live';status:string;current_question_index:number;question_count:number;difficulty:Difficulty}
+type Session={id:string;title:string;code:string;mode:'self_paced'|'live';status:string;current_question_index:number;question_count:number;difficulty:Difficulty;activity_type?:'assessment'|'adventure';adventure_game_id?:string|null}
 type Question={id:string;position:number;difficulty:'beginner'|'intermediate'|'advanced';category:string;prompt:string;options:string[];midi:number|null}
-const route=useRoute(),code=ref(String(route.params.code||route.query.code||'').trim().toUpperCase()),nickname=ref('')
+const route=useRoute(),router=useRouter(),code=ref(String(route.params.code||route.query.code||'').trim().toUpperCase()),nickname=ref('')
 const session=ref<Session|null>(null),participantId=ref(''),questions=ref<Question[]>([]),index=ref(0),selected=ref('')
 const answered=ref(false),score=ref(0),done=ref(false),busy=ref(false),error=ref(''),started=ref(false),answeredLive=ref(false)
 const waiting=computed(()=>session.value?.status==='lobby')
@@ -17,6 +17,7 @@ let channel:any=null
 async function join(){busy.value=true;error.value='';try{const db=requireSupabase();const {data:auth}=await db.auth.getSession();if(!auth.session){const {error:e}=await db.auth.signInAnonymously();if(e)throw e}
  const {data,error:e}=await db.rpc('join_class_session',{p_code:code.value.trim().toUpperCase(),p_nickname:nickname.value.trim()});if(e)throw e
  const joined=data as {session:Session;participant_id:string;score:number};session.value=joined.session;participantId.value=joined.participant_id;score.value=joined.score
+ if(joined.session.activity_type==='adventure'&&joined.session.adventure_game_id){await router.replace({path:'/aventura',query:{code:joined.session.code,nickname:nickname.value.trim()}});return}
  const {data:qs,error:qe}=await db.from('session_questions').select('id,position,difficulty,category,prompt,options,midi').eq('session_id',joined.session.id).order('position');if(qe)throw qe
  questions.value=qs as Question[];started.value=true;subscribe()
  }catch(e){error.value=e instanceof Error?e.message:'No se pudo ingresar a la sesión.'}finally{busy.value=false}}
