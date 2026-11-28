@@ -167,7 +167,9 @@ begin
  if auth.uid() is null or not public.is_authorized_teacher() then raise exception 'Solo el docente autorizado puede crear aventuras.'; end if;
  if p_difficulty not in ('beginner','intermediate','advanced','mixed') then raise exception 'Nivel no válido.'; end if;
  if char_length(trim(p_title))<1 or char_length(trim(p_title))>90 then raise exception 'El título debe tener entre 1 y 90 caracteres.'; end if;
- loop v_code:=upper(substr(encode(gen_random_bytes(5),'hex'),1,6)); exit when not exists(select 1 from public.adventure_games where code=v_code); end loop;
+ -- Serialize code allocation with the assessment-session factory.
+ perform pg_advisory_xact_lock(hashtext('guitar_tutor_shared_session_code_namespace'));
+ loop v_code:=upper(substr(encode(gen_random_bytes(5),'hex'),1,6)); exit when not exists(select 1 from public.adventure_games where code=v_code) and not exists(select 1 from public.sessions where code=v_code); end loop;
  insert into public.adventure_games(owner_id,code,title,difficulty) values(auth.uid(),v_code,trim(p_title),p_difficulty) returning * into v_game;
  insert into public.adventure_rooms(game_id,room_index,title,description,room_type) values
  (v_game.id,0,'La puerta de las notas','La primera puerta exige reconocer la escala de Sol mayor.','puzzle'),
