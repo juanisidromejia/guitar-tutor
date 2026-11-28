@@ -393,7 +393,7 @@ begin
   return;
  end if;
  update public.adventure_players set last_seen_at=now(),disconnected_at=null where id=v_player.id;
-end $;
+end $$;
 
 create or replace function public.adventure_teacher_action(p_game_id uuid,p_action text,p_payload jsonb default '{}'::jsonb)
 returns jsonb language plpgsql security definer set search_path=public
