@@ -13,6 +13,7 @@ declare
  v_player public.adventure_players;
  v_game public.adventure_games;
  v_challenge public.adventure_challenges;
+ v_next public.adventure_challenges;
  v_enemy public.adventure_enemies;
  v_correct boolean;
  v_remaining integer;
@@ -76,6 +77,18 @@ begin
   where game_id=p_game_id and room_index=v_player.room_index and status='active';
 
   -- Once the room is clear, give each living player a fresh door challenge.
+  if v_remaining>0 then
+   select * into v_next from public.adventure_challenges c
+   where c.game_id=p_game_id and c.room_index=v_player.room_index
+    and (v_game.difficulty='mixed' or c.difficulty=v_game.difficulty)
+    and c.id<>v_challenge.id
+   order by random() limit 1;
+   if found then
+    update public.adventure_players set challenge_id=v_next.id
+    where id=v_player.id returning * into v_player;
+   end if;
+  end if;
+
   if v_remaining=0 then
    update public.adventure_players p
    set challenge_id=coalesce((
