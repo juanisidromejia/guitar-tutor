@@ -24,10 +24,17 @@ declare
  v_message text;
  v_enemy_active boolean := false;
 begin
+ -- Lock players in a stable order before the room-wide update on enemy defeat.
+ -- This prevents deadlocks when several students answer at nearly the same time.
+ perform 1
+ from public.adventure_players
+ where game_id=p_game_id
+ order by id
+ for update;
+
  select * into v_player
  from public.adventure_players
- where game_id=p_game_id and user_id=auth.uid()
- for update;
+ where game_id=p_game_id and user_id=auth.uid();
 
  if not found then
   raise exception 'No formas parte de esta expedición.';
