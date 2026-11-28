@@ -56,6 +56,38 @@ create index if not exists adventure_enemies_challenge_idx
   on public.adventure_enemies(challenge_id);
 
 
+
+-- New adventures also receive the expanded question pool. This trigger is
+-- separate from create_adventure_game so its existing crypto search_path fix
+-- remains untouched.
+create or replace function public.seed_adventure_enemy_challenges()
+returns trigger
+language plpgsql
+security definer
+set search_path=public
+as $
+begin
+ insert into public.adventure_challenges(game_id,room_index,difficulty,variant_key,prompt,options,correct_answer,explanation)
+ values
+ (new.id,0,'intermediate','g-scale-e','¿Qué grado ocupa Re en la escala de Sol mayor?','["Segundo","Tercero","Quinto","Sexto"]'::jsonb,'Quinto','Re es el quinto grado de Sol mayor.'),
+ (new.id,0,'advanced','g-scale-f','¿Qué intervalo se forma entre Do y Fa♯?','["Cuarta justa","Cuarta aumentada","Quinta justa","Tercera mayor"]'::jsonb,'Cuarta aumentada','Do–Fa♯ forma una cuarta aumentada.'),
+ (new.id,1,'intermediate','g-notes-e','¿Qué nota ocupa el segundo grado de Sol mayor?','["La","Si","Do","Re"]'::jsonb,'La','La es el segundo grado de Sol mayor.'),
+ (new.id,1,'advanced','g-notes-f','¿Qué intervalo se forma entre Sol y Si?','["Tercera menor","Tercera mayor","Cuarta justa","Quinta justa"]'::jsonb,'Tercera mayor','Sol–Si forma una tercera mayor.'),
+ (new.id,2,'intermediate','c-scale-e','¿Qué grado ocupa Mi en la escala de Do mayor?','["Segundo","Tercero","Cuarto","Sexto"]'::jsonb,'Tercero','Mi es el tercer grado de Do mayor.'),
+ (new.id,2,'advanced','c-scale-f','¿Qué intervalo se forma entre Fa y Si?','["Cuarta justa","Cuarta aumentada","Quinta justa","Sexta menor"]'::jsonb,'Cuarta aumentada','Fa–Si forma una cuarta aumentada.'),
+ (new.id,3,'intermediate','e-scale-e','¿Qué grado ocupa Re♯ en la escala de Mi mayor?','["Quinto","Sexto","Séptimo","Octavo"]'::jsonb,'Séptimo','Re♯ es el séptimo grado de Mi mayor.'),
+ (new.id,3,'advanced','e-scale-f','¿Cuál es la sensible de la tonalidad de Mi mayor?','["Do♯","Re♯","Fa♯","Sol♯"]'::jsonb,'Re♯','La sensible de Mi mayor es Re♯.'),
+ (new.id,4,'intermediate','g-chord-e','¿Qué función cumple Do mayor en la tonalidad de Sol mayor?','["Tónica","Subdominante","Dominante","Sensible"]'::jsonb,'Subdominante','Do mayor es el acorde de subdominante (IV) en Sol mayor.'),
+ (new.id,4,'advanced','g-chord-f','¿Qué acorde cumple la función dominante en Sol mayor?','["Do mayor","Re mayor","Mi menor","La menor"]'::jsonb,'Re mayor','Re mayor es el acorde de dominante (V) en Sol mayor.');
+ return new;
+end;
+$;
+
+drop trigger if exists seed_adventure_enemy_challenges_after_game on public.adventure_games;
+create trigger seed_adventure_enemy_challenges_after_game
+after insert on public.adventure_games
+for each row execute function public.seed_adventure_enemy_challenges();
+
 -- Challenges are intentionally not directly selectable by authenticated clients.
 -- Expose only the prompt/options attached to enemies through a membership-checked RPC.
 create or replace function public.adventure_get_enemies(p_game_id uuid)
