@@ -11,9 +11,8 @@ const role=ref<'teacher'|'player'>('player')
 const code=ref(''),nickname=ref(''),sessionId=ref(''),game=ref<AdventureGame|null>(null),playerId=ref('')
 const challenge=ref<AdventureChallenge|null>(null),roomIndex=ref(0),errors=ref(0),eliminated=ref(false),completed=ref(false)
 const players=ref<AdventurePlayer[]>([]),events=ref<AdventureEvent[]>([]),inventory=ref<AdventureInventoryItem[]>([]),enemies=ref<AdventureEnemy[]>([])
-const currentEnemy=computed(()=>enemies.value.find(e=>e.room_index===roomIndex.value&&e.status==='active')??null)
-const enemyHealthPercent=computed(()=>currentEnemy.value?Math.max(0,Math.min(100,(currentEnemy.value.health/currentEnemy.value.max_health)*100)):0)
-const selected=ref(''),busy=ref(false),message=ref(''),announcement=ref('')
+const activeEnemies=computed(()=>enemies.value.filter(e=>e.room_index===roomIndex.value&&e.status==='active'))
+const busy=ref(false),message=ref(''),announcement=ref('')
 const teacherGift=ref('Poción de vida'),giftTarget=ref(''),eventText=ref(''),selectedRoom=ref(0)
 let channel:any=null,heartbeat:ReturnType<typeof setInterval>|undefined,refreshTimer:ReturnType<typeof setInterval>|undefined
 const roomNames=['La puerta de las notas','El corredor de Sol mayor','La cámara de Do mayor','La sala de Mi mayor','El puente de los acordes','El tesoro de las catacumbas']
