@@ -44,11 +44,11 @@ onUnmounted(()=>{if(channel)removeAdventureSubscription(channel);if(heartbeat)cl
 </script>
 <template>
 <div class="page">
- <div class="mb-6 flex items-center gap-3"><RouterLink to="/" class="secondary"><ArrowLeft :size="17"/></RouterLink><div><p class="eyebrow">Modo aventura · multijugador</p><h1 class="text-2xl font-black sm:text-3xl">Catacumbas de la Guitarra</h1></div></div>
+ <div class="mb-6 flex items-center gap-3"><RouterLink :to="role==='teacher'?'/docente/sesiones':'/'" class="secondary" :title="role==='teacher'?'Volver al panel docente':'Volver al inicio'"><ArrowLeft :size="17"/></RouterLink><div><p class="eyebrow">Modo aventura · multijugador</p><h1 class="text-2xl font-black sm:text-3xl">Catacumbas de la Guitarra</h1></div></div>
  <section v-if="!isSupabaseConfigured" class="panel p-6"><h2 class="text-xl font-black">Aventura en preparación</h2><p class="mt-2 text-sm text-[#718078]">La partida compartida necesita Supabase y la migración de aventura.</p></section>
  <section v-else-if="!game" class="panel mx-auto max-w-xl p-6 text-center"><p class="text-sm text-[#718078]">{{message||'Preparando la actividad…'}}</p></section>
  <template v-else>
-  <section class="panel mb-4 flex flex-wrap items-center justify-between gap-3 p-4"><div><p class="eyebrow">{{game.status==='lobby'?'Sala de espera':game.status==='active'?'Aventura en curso':'Partida finalizada'}}</p><h2 class="text-lg font-black">{{game.title}}</h2><p class="text-xs text-[#718078]">Código: <b class="tracking-widest">{{game.code}}</b> · {{difficultyName(game.difficulty)}}</p></div><div class="flex gap-2"><button class="secondary" @click="refresh"><RefreshCw :size="16"/></button><button class="secondary" @click="logout"><LogOut :size="16"/> Salir</button></div></section>
+  <section class="panel mb-4 flex flex-wrap items-center justify-between gap-3 p-4"><div><p class="eyebrow">{{game.status==='lobby'?'Sala de espera':game.status==='active'?'Aventura en curso':'Partida finalizada'}}</p><h2 class="text-lg font-black">{{game.title}}</h2><p class="text-xs text-[#718078]">Código: <b class="tracking-widest">{{game.code}}</b> · {{difficultyName(game.difficulty)}}</p></div><div class="flex gap-2"><button class="secondary" @click="refresh"><RefreshCw :size="16"/></button><RouterLink v-if="role==='teacher'" to="/docente/sesiones" class="secondary"><ArrowLeft :size="16"/> Volver al panel docente</RouterLink><button v-else class="secondary" @click="logout"><LogOut :size="16"/> Salir de la aventura</button></div></section>
   <div class="grid gap-4 lg:grid-cols-[1fr_300px]">
    <div class="space-y-4">
     <section class="panel p-5 sm:p-6">
