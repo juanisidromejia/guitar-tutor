@@ -76,6 +76,7 @@ onUnmounted(()=>{if(channel)removeAdventureSubscription(channel);if(heartbeat)cl
      <div v-else-if="eliminated" class="py-8 text-center"><Skull class="mx-auto text-[#9b4f3c]" :size="40"/><h3 class="mt-3 text-xl font-black">Has quedado fuera de la expedición</h3><p class="mt-2 text-sm text-[#718078]">Puedes seguir observando el recorrido de tus compañeros. El docente puede concederte una nueva oportunidad.</p></div>
      <div v-else-if="completed||roomIndex>=5" class="py-8 text-center"><Gem class="mx-auto text-[#b58a3a]" :size="42"/><h3 class="mt-3 text-2xl font-black">¡Has llegado a la cámara del tesoro!</h3><p class="mt-2 text-sm text-[#718078]">El tesoro es compartido: el primer aventurero que lo reclame lo obtiene.</p><button class="primary mt-4" :disabled="busy" @click="claimTreasure">Reclamar tesoro</button></div>
      <div v-else-if="challenge" class="mt-5">
+      <p class="text-sm text-[#718078]">{{challenge.room_description}}</p>
       <div v-if="activeEnemies.length" class="mt-4 space-y-4">
        <p class="text-sm font-bold text-[#8c4936]">¡Combate! Elige a qué enemigo atacar. Cada respuesta se envía automáticamente.</p>
        <article v-for="enemy in activeEnemies" :key="enemy.id" class="rounded-2xl border border-[#d7b6a2] bg-[#fff7f1] p-4">
