@@ -198,11 +198,24 @@ begin
   insert into public.adventure_events(game_id,actor_player_id,event_type,message)
   values(p_game_id,v_player.id,'room_cleared',v_player.nickname||' ha abierto la puerta de la sala '||v_player.room_index||'.');
  else
-  update public.adventure_players set last_seen_at=now()
-  where id=v_player.id returning * into v_player;
-  v_message:='Respuesta incorrecta. Inténtalo nuevamente; esta pregunta no quita vidas.';
-  insert into public.adventure_events(game_id,actor_player_id,event_type,message)
-  values(p_game_id,v_player.id,'wrong_answer',v_player.nickname||' ha fallado el desafío de la puerta.');
+  if v_challenge.challenge_type in ('enemy','trap') then
+   update public.adventure_players
+   set errors=least(errors+1,3),eliminated=(errors+1>=3),last_seen_at=now()
+   where id=v_player.id returning * into v_player;
+   v_message:=case when v_player.eliminated
+    then 'Respuesta incorrecta. Has perdido tu última vida y quedas eliminado.'
+    else 'Respuesta incorrecta. Has perdido una vida. Te quedan '||(3-v_player.errors)||'.' end;
+   insert into public.adventure_events(game_id,actor_player_id,event_type,message)
+   values(p_game_id,v_player.id,
+    case when v_player.eliminated then 'player_eliminated' else 'life_lost' end,
+    v_player.nickname||' ha fallado un desafío peligroso.');
+  else
+   update public.adventure_players set last_seen_at=now()
+   where id=v_player.id returning * into v_player;
+   v_message:='Respuesta incorrecta. Inténtalo nuevamente; esta pregunta no quita vidas.';
+   insert into public.adventure_events(game_id,actor_player_id,event_type,message)
+   values(p_game_id,v_player.id,'wrong_answer',v_player.nickname||' ha fallado el desafío de la puerta.');
+  end if;
  end if;
 
  return jsonb_build_object(
