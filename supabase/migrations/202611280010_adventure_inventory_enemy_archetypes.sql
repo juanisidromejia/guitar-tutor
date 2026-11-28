@@ -29,6 +29,29 @@ set challenge_id = (
 )
 where e.challenge_id is null;
 
+
+-- Add a second intermediate and advanced question in every room so enemies
+-- can rotate questions instead of repeating a single prompt indefinitely.
+insert into public.adventure_challenges(game_id,room_index,difficulty,variant_key,prompt,options,correct_answer,explanation)
+select g.id, q.room_index, q.difficulty, q.variant_key, q.prompt, q.options::jsonb, q.correct_answer, q.explanation
+from public.adventure_games g
+cross join (values
+ (0,'intermediate','g-scale-e','¿Qué grado ocupa Re en la escala de Sol mayor?','["Segundo","Tercero","Quinto","Sexto"]','Quinto','Re es el quinto grado de Sol mayor.'),
+ (0,'advanced','g-scale-f','¿Qué intervalo se forma entre Do y Fa♯?','["Cuarta justa","Cuarta aumentada","Quinta justa","Tercera mayor"]','Cuarta aumentada','Do–Fa♯ forma una cuarta aumentada.'),
+ (1,'intermediate','g-notes-e','¿Qué nota ocupa el segundo grado de Sol mayor?','["La","Si","Do","Re"]','La','La es el segundo grado de Sol mayor.'),
+ (1,'advanced','g-notes-f','¿Qué intervalo se forma entre Sol y Si?','["Tercera menor","Tercera mayor","Cuarta justa","Quinta justa"]','Tercera mayor','Sol–Si forma una tercera mayor.'),
+ (2,'intermediate','c-scale-e','¿Qué grado ocupa Mi en la escala de Do mayor?','["Segundo","Tercero","Cuarto","Sexto"]','Tercero','Mi es el tercer grado de Do mayor.'),
+ (2,'advanced','c-scale-f','¿Qué intervalo se forma entre Fa y Si?','["Cuarta justa","Cuarta aumentada","Quinta justa","Sexta menor"]','Cuarta aumentada','Fa–Si forma una cuarta aumentada.'),
+ (3,'intermediate','e-scale-e','¿Qué grado ocupa Re♯ en la escala de Mi mayor?','["Quinto","Sexto","Séptimo","Octavo"]','Séptimo','Re♯ es el séptimo grado de Mi mayor.'),
+ (3,'advanced','e-scale-f','¿Cuál es la sensible de la tonalidad de Mi mayor?','["Do♯","Re♯","Fa♯","Sol♯"]','Re♯','La sensible de Mi mayor es Re♯.'),
+ (4,'intermediate','g-chord-e','¿Qué función cumple Do mayor en la tonalidad de Sol mayor?','["Tónica","Subdominante","Dominante","Sensible"]','Subdominante','Do mayor es el acorde de subdominante (IV) en Sol mayor.'),
+ (4,'advanced','g-chord-f','¿Qué acorde cumple la función dominante en Sol mayor?','["Do mayor","Re mayor","Mi menor","La menor"]','Re mayor','Re mayor es el acorde de dominante (V) en Sol mayor.')
+) as q(room_index,difficulty,variant_key,prompt,options,correct_answer,explanation)
+where not exists (
+ select 1 from public.adventure_challenges c
+ where c.game_id=g.id and c.room_index=q.room_index and c.variant_key=q.variant_key
+);
+
 create index if not exists adventure_enemies_challenge_idx
   on public.adventure_enemies(challenge_id);
 
@@ -233,7 +256,17 @@ begin
   select c.id into v_challenge_id
   from public.adventure_challenges c
   where c.game_id=p_game_id and c.room_index=v_room and c.difficulty=v_difficulty
+    and not exists(select 1 from public.adventure_enemies e
+      where e.game_id=p_game_id and e.room_index=v_room and e.status='active'
+        and e.challenge_id=c.id)
   order by random() limit 1;
+
+  if v_challenge_id is null then
+    select c.id into v_challenge_id
+    from public.adventure_challenges c
+    where c.game_id=p_game_id and c.room_index=v_room and c.difficulty=v_difficulty
+    order by random() limit 1;
+  end if;
   if v_challenge_id is null then
     raise exception 'No hay preguntas de nivel % para esta sala.',v_difficulty;
   end if;
