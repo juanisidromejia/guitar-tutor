@@ -16,7 +16,7 @@ export async function startAdventure(gameId:string) {
   const {error}=await db().rpc('start_adventure_game',{p_game_id:gameId})
   if(error) throw error
 }
-export async function submitAdventureAnswer(gameId:string,answer:string) {
+export async function attackAdventureEnemy(gameId:string,enemyId:string,answer:string) {\n  const {data,error}=await db().rpc('attack_adventure_enemy',{p_game_id:gameId,p_enemy_id:enemyId,p_answer:answer})\n  if(error) throw error\n  return data as AdventureAnswerResult\n}\nexport async function submitAdventureAnswer(gameId:string,answer:string) {
   const {data,error}=await db().rpc('submit_adventure_answer',{p_game_id:gameId,p_answer:answer})
   if(error) throw error
   return data as AdventureAnswerResult
