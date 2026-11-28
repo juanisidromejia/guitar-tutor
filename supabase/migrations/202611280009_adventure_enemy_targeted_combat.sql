@@ -18,10 +18,13 @@ declare
  v_remaining integer;
  v_message text;
 begin
+ -- Serialize room-wide updates and avoid deadlocks when several players attack at once.
+ perform 1 from public.adventure_players
+ where game_id=p_game_id order by id for update;
+
  select * into v_player
  from public.adventure_players
- where game_id=p_game_id and user_id=auth.uid()
- for update;
+ where game_id=p_game_id and user_id=auth.uid();
  if not found then raise exception 'No formas parte de esta expedición.'; end if;
 
  select * into v_game from public.adventure_games where id=p_game_id;
