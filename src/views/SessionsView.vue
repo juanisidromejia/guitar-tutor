@@ -63,7 +63,7 @@ onUnmounted(()=>{if(channel)requireSupabase().removeChannel(channel);if(nextFeed
     <div><label class="mb-1 block text-sm font-bold">Nivel de dificultad</label><select v-model="difficulty" class="w-full rounded-xl border border-[#dce6dd] bg-white px-3 py-3"><option value="beginner">Principiante</option><option value="intermediate">Intermedio</option><option value="advanced">Avanzado</option><option value="mixed">Mixto · los tres niveles</option></select><p class="mt-1 text-xs text-[#718078]">En nivel mixto, las preguntas se distribuyen entre los tres niveles.</p></div>
     <div v-if="activityType==='adventure'" class="rounded-2xl border border-[#dce8de] bg-[#f8fbf8] p-4">
      <h3 class="font-extrabold text-[#285d45]">Preparar las cinco salas</h3>
-     <p class="mt-1 text-xs leading-5 text-[#718078]">Configura cuántos enemigos aparecerán automáticamente, si la sala tendrá una trampa y si sus enemigos subirán un nivel respecto a la dificultad general.</p>
+     <p class="mt-1 text-xs leading-5 text-[#718078]">Configura cuántos enemigos aparecerán automáticamente, si la sala tendrá una trampa y si toda la sala subirá un nivel: afectará tanto a sus enemigos como a la pregunta de la puerta.</p>
      <div class="mt-3 space-y-3">
       <div v-for="(room,index) in roomConfigs" :key="index" class="rounded-xl border border-[#e1e9e2] bg-white p-3">
        <div class="flex items-center justify-between gap-2"><b class="text-sm">Sala {{index+1}} · {{roomNames[index]}}</b><span v-if="room.trap" class="rounded-full bg-[#fff0e9] px-2 py-1 text-[10px] font-bold text-[#9b4f3c]">Trampa</span></div>
@@ -71,7 +71,7 @@ onUnmounted(()=>{if(channel)requireSupabase().removeChannel(channel);if(nextFeed
         <label class="text-xs font-bold">Enemigos
          <select v-model.number="room.enemies" class="mt-1 w-full rounded-lg border border-[#dce6dd] bg-white px-2 py-2 text-sm"><option :value="0">Ninguno</option><option :value="1">1 enemigo</option><option :value="2">2 enemigos</option><option :value="3">3 enemigos</option></select>
         </label>
-        <label class="text-xs font-bold">Dificultad de enemigos
+        <label class="text-xs font-bold">Dificultad de la sala
          <select v-model.number="room.difficulty_offset" class="mt-1 w-full rounded-lg border border-[#dce6dd] bg-white px-2 py-2 text-sm"><option :value="0">Nivel general</option><option :value="1">+1 nivel</option></select>
         </label>
        </div>
