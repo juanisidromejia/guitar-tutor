@@ -118,7 +118,8 @@ begin
 
   loop
     v_code := upper(substr(replace(pg_catalog.gen_random_uuid()::text,'-',''),1,6));
-    exit when not exists(select 1 from public.sessions where code=v_code);
+    exit when not exists(select 1 from public.sessions where code=v_code)
+      and not exists(select 1 from public.adventure_games where code=v_code);
   end loop;
 
   insert into public.sessions(owner_id,code,title,mode,question_count,difficulty)
