@@ -37,6 +37,9 @@ begin
     raise exception 'El número de preguntas debe estar entre 1 y % para el nivel seleccionado.', v_available;
   end if;
 
+  -- Use the same transaction lock as adventure creation to prevent cross-table collisions.
+  perform pg_advisory_xact_lock(hashtext('guitar_tutor_shared_session_code_namespace'));
+
   loop
     v_code := upper(substr(replace(pg_catalog.gen_random_uuid()::text,'-',''),1,6));
     exit when not exists(select 1 from public.sessions where code=v_code)
