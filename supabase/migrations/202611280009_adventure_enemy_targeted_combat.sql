@@ -72,6 +72,21 @@ begin
   from public.adventure_enemies
   where game_id=p_game_id and room_index=v_player.room_index and status='active';
 
+  -- Once the room is clear, give each living player a fresh door challenge.
+  if v_remaining=0 then
+   update public.adventure_players p
+   set challenge_id=coalesce((
+    select c.id from public.adventure_challenges c
+    where c.game_id=p_game_id and c.room_index=p.room_index
+     and (v_game.difficulty='mixed' or c.difficulty=v_game.difficulty)
+     and c.id<>p.challenge_id
+    order by random() limit 1
+   ),p.challenge_id)
+   where p.game_id=p_game_id and p.room_index=v_player.room_index and not p.eliminated;
+
+   select * into v_player from public.adventure_players where id=v_player.id;
+  end if;
+
   if v_enemy.status='defeated' then
    v_message := case when v_remaining=0
     then '¡Enemigo derrotado! La sala está libre. Ahora resuelve el desafío de la puerta.'
