@@ -124,10 +124,10 @@ alter table public.adventure_combat enable row level security;
 
 create or replace function public.is_adventure_member(p_game_id uuid)
 returns boolean language sql stable security definer set search_path=public
-as $ select exists(select 1 from public.adventure_players p where p.game_id=p_game_id and p.user_id=auth.uid()) $;
+as $$ select exists(select 1 from public.adventure_players p where p.game_id=p_game_id and p.user_id=auth.uid()) $$;
 create or replace function public.is_adventure_owner(p_game_id uuid)
 returns boolean language sql stable security definer set search_path=public
-as $ select exists(select 1 from public.adventure_games g where g.id=p_game_id and g.owner_id=auth.uid()) $;
+as $$ select exists(select 1 from public.adventure_games g where g.id=p_game_id and g.owner_id=auth.uid()) $$;
 drop policy if exists "adventure games visible to members" on public.adventure_games;
 create policy "adventure games visible to members" on public.adventure_games for select to authenticated
 using(public.is_adventure_owner(id) or public.is_adventure_member(id));
