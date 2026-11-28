@@ -401,15 +401,14 @@ begin
     and c.difficulty=v_enemy.difficulty and c.id<>v_challenge.id
     and not exists(select 1 from public.adventure_answers a
       where a.game_id=p_game_id and a.challenge_id=c.id)
+    and not exists(select 1 from public.adventure_enemies other_enemy
+      where other_enemy.game_id=p_game_id and other_enemy.room_index=v_enemy.room_index
+       and other_enemy.status='active' and other_enemy.id<>v_enemy.id
+       and other_enemy.challenge_id=c.id)
    order by random() limit 1;
 
-   if not found then
-    select * into v_next from public.adventure_challenges c
-    where c.game_id=p_game_id and c.room_index=v_enemy.room_index
-     and c.difficulty=v_enemy.difficulty and c.id<>v_challenge.id
-    order by random() limit 1;
-   end if;
-
+   -- If the room's unused questions are exhausted, keep this enemy's current
+   -- question for reinforcement instead of borrowing another active enemy's prompt.
    if found then
     update public.adventure_enemies set challenge_id=v_next.id where id=v_enemy.id
     returning * into v_enemy;
