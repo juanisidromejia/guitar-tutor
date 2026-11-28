@@ -24,6 +24,7 @@ create table if not exists public.adventure_challenges (
  game_id uuid not null references public.adventure_games(id) on delete cascade,
  room_index integer not null check(room_index between 0 and 4),
  difficulty text not null check(difficulty in ('beginner','intermediate','advanced')),
+ challenge_type text not null default 'normal' check(challenge_type in ('normal','enemy','trap')),
  variant_key text not null,
  prompt text not null,
  options jsonb not null check(jsonb_typeof(options)='array'),
@@ -153,7 +154,7 @@ grant select on public.adventure_games,public.adventure_players,public.adventure
 create or replace function public.adventure_get_challenge(p_challenge_id uuid)
 returns jsonb language sql stable security definer set search_path=public
 as $$
- select jsonb_build_object('challenge_id',c.id,'room_index',c.room_index,'room_title',r.title,'room_description',r.description,'prompt',c.prompt,'options',c.options)
+ select jsonb_build_object('challenge_id',c.id,'room_index',c.room_index,'room_title',r.title,'room_description',r.description,'challenge_type',c.challenge_type,'prompt',c.prompt,'options',c.options)
  from public.adventure_challenges c join public.adventure_rooms r on r.game_id=c.game_id and r.room_index=c.room_index
  where c.id=p_challenge_id
 $$;
@@ -241,51 +242,141 @@ end $$;
 create or replace function public.submit_adventure_answer(p_game_id uuid,p_answer text)
 returns jsonb language plpgsql security definer set search_path=public
 as $$
-declare v_player public.adventure_players; v_game public.adventure_games; v_challenge public.adventure_challenges; v_next public.adventure_challenges; v_correct boolean; v_message text;
+declare
+ v_player public.adventure_players;
+ v_game public.adventure_games;
+ v_challenge public.adventure_challenges;
+ v_next public.adventure_challenges;
+ v_correct boolean;
+ v_message text;
 begin
- select * into v_player from public.adventure_players where game_id=p_game_id and user_id=auth.uid() for update;
+ select * into v_player
+ from public.adventure_players
+ where game_id=p_game_id and user_id=auth.uid()
+ for update;
  if not found then raise exception 'No formas parte de esta expedición.'; end if;
+
  select * into v_game from public.adventure_games where id=p_game_id;
- if v_game.status<>'active' or v_player.eliminated or v_player.room_index>=5 then raise exception 'No puedes responder en este momento.'; end if;
- select * into v_challenge from public.adventure_challenges where id=v_player.challenge_id;
+ if v_game.status<>'active' or v_player.eliminated or v_player.room_index>=5 then
+  raise exception 'No puedes responder en este momento.';
+ end if;
+
+ select * into v_challenge
+ from public.adventure_challenges
+ where id=v_player.challenge_id and game_id=p_game_id;
  if not found then raise exception 'No se encontró el desafío asignado.'; end if;
- if not exists(select 1 from jsonb_array_elements_text(v_challenge.options) o(value) where value=p_answer) then raise exception 'La opción elegida no es válida.'; end if;
- if exists(select 1 from public.adventure_answers where player_id=v_player.id and challenge_id=v_challenge.id) then raise exception 'Este desafío ya fue respondido.'; end if;
+
+ if not exists(
+  select 1 from jsonb_array_elements_text(v_challenge.options) o(value)
+  where value=p_answer
+ ) then raise exception 'La opción elegida no es válida.'; end if;
+
  v_correct:=p_answer=v_challenge.correct_answer;
- insert into public.adventure_answers(game_id,player_id,challenge_id,selected_answer,is_correct) values(p_game_id,v_player.id,v_challenge.id,p_answer,v_correct);
+
+ -- A normal room question can be retried. Keep only the latest attempt for this challenge.
+ insert into public.adventure_answers(game_id,player_id,challenge_id,selected_answer,is_correct)
+ values(p_game_id,v_player.id,v_challenge.id,p_answer,v_correct)
+ on conflict(player_id,challenge_id) do update
+ set selected_answer=excluded.selected_answer,
+     is_correct=excluded.is_correct,
+     answered_at=now();
+
  if v_correct then
-  update public.adventure_players set room_index=room_index+1,challenge_id=null,last_seen_at=now() where id=v_player.id returning * into v_player;
+  update public.adventure_players
+  set room_index=room_index+1,challenge_id=null,last_seen_at=now()
+  where id=v_player.id returning * into v_player;
+
   if v_player.room_index<5 then
-   select * into v_next from public.adventure_challenges where game_id=p_game_id and room_index=v_player.room_index and (v_game.difficulty='mixed' or difficulty=v_game.difficulty) order by random() limit 1;
-   update public.adventure_players set challenge_id=v_next.id where id=v_player.id returning * into v_player;
+   select * into v_next
+   from public.adventure_challenges
+   where game_id=p_game_id and room_index=v_player.room_index
+     and (v_game.difficulty='mixed' or difficulty=v_game.difficulty)
+   order by random() limit 1;
+   if not found then raise exception 'No hay desafíos configurados para la siguiente sala.'; end if;
+   update public.adventure_players set challenge_id=v_next.id
+   where id=v_player.id returning * into v_player;
    v_message:='¡Correcto! Has abierto la puerta y avanzas a la siguiente sala.';
   else
    v_message:='¡Has superado las cinco salas! La cámara del tesoro está abierta.';
   end if;
-  insert into public.adventure_events(game_id,actor_player_id,event_type,message) values(p_game_id,v_player.id,'room_cleared',v_player.nickname||' ha superado la sala '||v_player.room_index||'.');
+
+  insert into public.adventure_events(game_id,actor_player_id,event_type,message)
+  values(p_game_id,v_player.id,'room_cleared',v_player.nickname||' ha superado la sala '||v_player.room_index||'.');
  else
-  update public.adventure_players set errors=least(errors+1,3),eliminated=(errors+1>=3),last_seen_at=now() where id=v_player.id returning * into v_player;
-  if v_player.eliminated then v_message:='Has cometido tres errores y quedas eliminado. Puedes observar la partida.';
-  else v_message:='Respuesta incorrecta. Te quedan '||(3-v_player.errors)||' oportunidades antes de quedar eliminado.'; end if;
-  insert into public.adventure_events(game_id,actor_player_id,event_type,message) values(p_game_id,v_player.id,case when v_player.eliminated then 'player_eliminated' else 'wrong_answer' end,case when v_player.eliminated then v_player.nickname||' ha quedado eliminado.' else v_player.nickname||' ha fallado un desafío.' end);
+  if v_challenge.challenge_type in ('enemy','trap') then
+   update public.adventure_players
+   set errors=least(errors+1,3),
+       eliminated=(errors+1>=3),
+       last_seen_at=now()
+   where id=v_player.id returning * into v_player;
+
+   if v_player.eliminated then
+    v_message:='Respuesta incorrecta. Has perdido tu última vida y quedas eliminado. Puedes observar la partida.';
+   else
+    v_message:='Respuesta incorrecta. Has perdido una vida. Te quedan '||(3-v_player.errors)||'.';
+   end if;
+   insert into public.adventure_events(game_id,actor_player_id,event_type,message)
+   values(p_game_id,v_player.id,
+     case when v_player.eliminated then 'player_eliminated' else 'life_lost' end,
+     case when v_player.eliminated then v_player.nickname||' ha quedado eliminado.'
+          else v_player.nickname||' ha perdido una vida.' end);
+  else
+   update public.adventure_players set last_seen_at=now()
+   where id=v_player.id returning * into v_player;
+   v_message:='Respuesta incorrecta. Inténtalo nuevamente; esta pregunta no quita vidas.';
+   insert into public.adventure_events(game_id,actor_player_id,event_type,message)
+   values(p_game_id,v_player.id,'wrong_answer',v_player.nickname||' está intentando resolver el desafío nuevamente.');
+  end if;
  end if;
- return jsonb_build_object('correct',v_correct,'eliminated',v_player.eliminated,'room_index',v_player.room_index,'errors',v_player.errors,'completed',v_player.room_index>=5,'challenge',case when v_player.challenge_id is null then null else public.adventure_get_challenge(v_player.challenge_id) end,'message',v_message);
+
+ return jsonb_build_object(
+  'correct',v_correct,
+  'eliminated',v_player.eliminated,
+  'room_index',v_player.room_index,
+  'errors',v_player.errors,
+  'completed',v_player.room_index>=5,
+  'challenge',case when v_player.challenge_id is null then null else public.adventure_get_challenge(v_player.challenge_id) end,
+  'message',v_message
+ );
 end $$;
 
 create or replace function public.claim_adventure_treasure(p_game_id uuid)
 returns jsonb language plpgsql security definer set search_path=public
 as $$
-declare v_player public.adventure_players; v_t public.adventure_treasures;
+declare
+ v_player public.adventure_players;
+ v_game public.adventure_games;
+ v_t public.adventure_treasures;
 begin
- select * into v_player from public.adventure_players where game_id=p_game_id and user_id=auth.uid() for update;
- if not found or v_player.eliminated or v_player.room_index<5 then raise exception 'Debes superar las cinco salas para reclamar el tesoro.'; end if;
- update public.adventure_treasures set claimed_by=v_player.id,claimed_at=now(),available=false
- where game_id=p_game_id and available=true and claimed_by is null returning * into v_t;
- if not found then return jsonb_build_object('claimed',false,'message','Otro aventurero ya reclamó el tesoro.'); end if;
- insert into public.adventure_inventory(game_id,player_id,item_key,label,description) values(p_game_id,v_player.id,v_t.item_key,v_t.label,v_t.description)
- on conflict(player_id,item_key) do update set quantity=public.adventure_inventory.quantity+1;
+ select * into v_player
+ from public.adventure_players
+ where game_id=p_game_id and user_id=auth.uid()
+ for update;
+ if not found or v_player.eliminated or v_player.room_index<5 then
+  raise exception 'Debes superar las cinco salas para reclamar el tesoro.';
+ end if;
+
+ select * into v_game from public.adventure_games where id=p_game_id;
+ if not found or v_game.status<>'active' then
+  raise exception 'La aventura ya no está activa.';
+ end if;
+
+ update public.adventure_treasures
+ set claimed_by=v_player.id,claimed_at=now(),available=false
+ where game_id=p_game_id and available=true and claimed_by is null
+ returning * into v_t;
+ if not found then
+  return jsonb_build_object('claimed',false,'message','Otro aventurero ya reclamó el tesoro.');
+ end if;
+
+ insert into public.adventure_inventory(game_id,player_id,item_key,label,description)
+ values(p_game_id,v_player.id,v_t.item_key,v_t.label,v_t.description)
+ on conflict(player_id,item_key) do update
+ set quantity=public.adventure_inventory.quantity+1;
+
  update public.adventure_players set finished_at=now() where id=v_player.id;
- insert into public.adventure_events(game_id,actor_player_id,event_type,message) values(p_game_id,v_player.id,'treasure_claimed',v_player.nickname||' ha reclamado el tesoro: '||v_t.label||'.');
+ insert into public.adventure_events(game_id,actor_player_id,event_type,message)
+ values(p_game_id,v_player.id,'treasure_claimed',v_player.nickname||' ha reclamado el tesoro: '||v_t.label||'.');
  return jsonb_build_object('claimed',true,'message','¡Has reclamado el tesoro! '||v_t.label,'item_label',v_t.label);
 end $$;
 
@@ -321,7 +412,7 @@ begin
   on conflict(player_id,item_key) do update set quantity=public.adventure_inventory.quantity+1;
   insert into public.adventure_events(game_id,actor_player_id,event_type,message) values(p_game_id,v_player.id,'gift',v_player.nickname||' ha recibido: '||v_label||'.');
  elsif p_action='revive' then
-  update public.adventure_players set eliminated=false,errors=0,challenge_id=(select c.id from public.adventure_challenges c where c.game_id=p_game_id and c.room_index=adventure_players.room_index order by random() limit 1),last_seen_at=now()
+  update public.adventure_players set eliminated=false,errors=0,challenge_id=(select c.id from public.adventure_challenges c where c.game_id=p_game_id and c.room_index=adventure_players.room_index and (c.difficulty=(select g.difficulty from public.adventure_games g where g.id=p_game_id) or (select g.difficulty from public.adventure_games g where g.id=p_game_id)='mixed') order by random() limit 1),last_seen_at=now()
   where id=(p_payload->>'player_id')::uuid and game_id=p_game_id;
   if not found then raise exception 'No se encontró al estudiante.'; end if;
   insert into public.adventure_events(game_id,event_type,message) values(p_game_id,'revival','El maestro del juego ha devuelto a un aventurero a la expedición.');
