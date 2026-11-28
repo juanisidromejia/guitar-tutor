@@ -176,7 +176,7 @@ begin
  (v_game.id,3,'La sala de Mi mayor','Tres símbolos musicales custodian esta sala.','puzzle'),
  (v_game.id,4,'El puente de los acordes','Solo el acorde correcto permitirá cruzar.','puzzle'),
  (v_game.id,5,'La cámara del tesoro','Has superado las cinco pruebas. El tesoro espera a su primer reclamante.','treasure');
- -- Two equivalent variants per room; each player receives one at random, independently.
+ -- Beginner variants plus level-specific intermediate and advanced challenges; each player receives one challenge per room.
  insert into public.adventure_challenges(game_id,room_index,difficulty,variant_key,prompt,options,correct_answer,explanation) values
  (v_game.id,0,'beginner','g-scale-a','¿Qué nota debe aparecer en la escala de Sol mayor?','["Fa","Fa♯","Do♯","Si♭"]'::jsonb,'Fa♯','La escala de Sol mayor contiene Fa♯.'),
  (v_game.id,0,'beginner','g-scale-b','¿Qué alteración tiene la tonalidad de Sol mayor?','["Fa♯","Do♯","Si♭","Mi♭"]'::jsonb,'Fa♯','Sol mayor tiene un sostenido: Fa♯.'),
@@ -186,8 +186,8 @@ begin
  (v_game.id,2,'beginner','c-scale-b','¿Qué nota NO pertenece a la escala natural de Do mayor?','["Fa","La","Si","Fa♯"]'::jsonb,'Fa♯','Do mayor utiliza las siete notas naturales.'),
  (v_game.id,3,'beginner','e-scale-a','¿Cuántos sostenidos tiene la tonalidad de Mi mayor?','["Dos","Tres","Cuatro","Cinco"]'::jsonb,'Cuatro','Mi mayor tiene Fa♯, Do♯, Sol♯ y Re♯.'),
  (v_game.id,3,'beginner','e-scale-b','¿Cuál de estas notas está alterada en Mi mayor?','["Fa♯","La","Si","Mi"]'::jsonb,'Fa♯','Mi mayor contiene cuatro sostenidos, incluido Fa♯.'),
- (v_game.id,4,'beginner','g-chord-a','¿Qué notas forman la tríada de Sol mayor?','["Sol–Si–Re","Sol–Si♭–Re","Sol–Do–Mi","Sol–La–Re"]'::jsonb,'Sol–Si–Re','Sol mayor se forma con fundamental, tercera mayor y quinta justa.'),
- (v_game.id,4,'beginner','g-chord-b','¿Cuál es el acorde mayor construido sobre la nota Sol?','["Sol–Si–Re","Sol–Si♭–Re","Sol–Do–Re","Sol–La–Do"]'::jsonb,'Sol–Si–Re','La tríada mayor de Sol contiene Sol, Si y Re.'),
+ (v_game.id,4,'beginner','g-chord-a','¿Cuál de estos acordes mayores contiene la nota Sol?','["Do–Mi–Sol","Re–Fa♯–La","La–Do♯–Mi","Mi–Sol♯–Si"]'::jsonb,'Do–Mi–Sol','Do mayor contiene las notas Do, Mi y Sol.'),
+ (v_game.id,4,'beginner','g-chord-b','Ordena las notas del acorde de Re mayor desde la más grave hasta la más aguda.','["Re–Fa♯–La","Fa♯–La–Re","La–Re–Fa♯","Re–La–Fa♯"]'::jsonb,'Re–Fa♯–La','En estado fundamental, Re mayor se ordena Re, Fa♯ y La.'),
  (v_game.id,0,'intermediate','g-scale-c','¿Qué grado de la escala de Sol mayor es Fa♯?','["Cuarto","Quinto","Sexto","Séptimo"]'::jsonb,'Séptimo','Fa♯ es el séptimo grado de Sol mayor.'),
  (v_game.id,0,'advanced','g-scale-d','¿Qué intervalo separa Mi de Fa♯ en Sol mayor?','["Segunda mayor","Tercera menor","Segunda menor","Tercera mayor"]'::jsonb,'Segunda mayor','Mi–Fa♯ es una segunda mayor.'),
  (v_game.id,1,'intermediate','g-notes-c','¿Qué nota ocupa el sexto grado de Sol mayor?','["Do","Re","Mi","Fa♯"]'::jsonb,'Mi','Los grados son Sol, La, Si, Do, Re, Mi y Fa♯.'),
@@ -382,18 +382,37 @@ end $$;
 
 create or replace function public.adventure_heartbeat(p_game_id uuid)
 returns void language plpgsql security definer set search_path=public
-as $$
-declare v_player public.adventure_players;
+as $
+declare
+ v_player public.adventure_players;
+ v_game public.adventure_games;
 begin
- select * into v_player from public.adventure_players where game_id=p_game_id and user_id=auth.uid() for update;
+ select * into v_player
+ from public.adventure_players
+ where game_id=p_game_id and user_id=auth.uid()
+ for update;
  if not found then raise exception 'No perteneces a esta partida.'; end if;
- if v_player.last_seen_at < now()-interval '3 minutes' and not v_player.eliminated then
-  update public.adventure_players set eliminated=true,errors=3,disconnected_at=now() where id=v_player.id;
-  insert into public.adventure_events(game_id,actor_player_id,event_type,message) values(p_game_id,v_player.id,'reconnect_expired',v_player.nickname||' perdió la conexión durante más de tres minutos y quedó fuera de la expedición.');
+
+ select * into v_game from public.adventure_games where id=p_game_id;
+ if not found then raise exception 'La partida ya no existe.'; end if;
+
+ -- The three-minute reconnect grace applies only after the teacher starts the adventure.
+ if v_game.status='active'
+    and v_player.last_seen_at < now()-interval '3 minutes'
+    and not v_player.eliminated then
+  update public.adventure_players
+  set eliminated=true,errors=3,disconnected_at=now()
+  where id=v_player.id;
+  insert into public.adventure_events(game_id,actor_player_id,event_type,message)
+  values(p_game_id,v_player.id,'reconnect_expired',
+    v_player.nickname||' perdió la conexión durante más de tres minutos y quedó fuera de la expedición.');
   return;
  end if;
- update public.adventure_players set last_seen_at=now(),disconnected_at=null where id=v_player.id;
-end $$;
+
+ update public.adventure_players
+ set last_seen_at=now(),disconnected_at=null
+ where id=v_player.id;
+end $;
 
 create or replace function public.adventure_teacher_action(p_game_id uuid,p_action text,p_payload jsonb default '{}'::jsonb)
 returns jsonb language plpgsql security definer set search_path=public
