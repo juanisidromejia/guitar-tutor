@@ -26,6 +26,11 @@ export async function submitAdventureAnswer(gameId:string,answer:string) {
   if(error) throw error
   return data as AdventureAnswerResult
 }
+export async function useAdventureItem(gameId:string,itemId:string) {
+  const {data,error}=await db().rpc('use_adventure_item',{p_game_id:gameId,p_item_id:itemId})
+  if(error) throw error
+  return data as {success:boolean;errors:number;lives:number;message:string}
+}
 export async function claimAdventureTreasure(gameId:string) {
   const {data,error}=await db().rpc('claim_adventure_treasure',{p_game_id:gameId})
   if(error) throw error
@@ -46,7 +51,7 @@ export async function loadAdventurePlayerState(gameId:string) {
   return data as AdventurePlayerState
 }
 export async function loadAdventureEnemies(gameId:string) {
-  const {data,error}=await db().from('adventure_enemies').select('id,room_index,name,weakness,health,max_health,status').eq('game_id',gameId).order('created_at',{ascending:false})
+  const {data,error}=await db().from('adventure_enemies').select('id,room_index,name,weakness,enemy_type,difficulty,health,max_health,status,challenge:adventure_challenges(prompt,options)').eq('game_id',gameId).order('created_at',{ascending:false})
   if(error) throw error
   return (data??[]) as AdventureEnemy[]
 }
@@ -70,6 +75,7 @@ export function subscribeAdventure(gameId:string,onChange:()=>void) {
     .on('postgres_changes',{event:'*',schema:'public',table:'adventure_players',filter:'game_id=eq.'+gameId},onChange)
     .on('postgres_changes',{event:'*',schema:'public',table:'adventure_events',filter:'game_id=eq.'+gameId},onChange)
     .on('postgres_changes',{event:'*',schema:'public',table:'adventure_enemies',filter:'game_id=eq.'+gameId},onChange)
+    .on('postgres_changes',{event:'*',schema:'public',table:'adventure_inventory',filter:'game_id=eq.'+gameId},onChange)
     .on('postgres_changes',{event:'*',schema:'public',table:'adventure_games',filter:'id=eq.'+gameId},onChange)
     .subscribe()
 }
