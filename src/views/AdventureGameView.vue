@@ -1,16 +1,18 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 import { ArrowLeft, BookOpen, CheckCircle2, Clock3, Gem, Heart, LogOut, RefreshCw, ShieldAlert, Skull, Sparkles, Swords, Users } from 'lucide-vue-next'
 import { isSupabaseConfigured, requireSupabase } from '../services/supabase'
-import { joinAdventure, submitAdventureAnswer, claimAdventureTreasure, sendAdventureHeartbeat, teacherAction, loadAdventurePlayers, loadAdventureEvents, loadAdventureInventory, subscribeAdventure, removeAdventureSubscription } from '../modules/adventure/adventureService'
-import type { AdventureDifficulty, AdventureGame, AdventureChallenge, AdventurePlayer, AdventureEvent, AdventureInventoryItem } from '../modules/adventure/types'
+import { joinAdventure, submitAdventureAnswer, claimAdventureTreasure, sendAdventureHeartbeat, teacherAction, loadAdventurePlayers, loadAdventureEvents, loadAdventureInventory, loadAdventureEnemies, loadAdventurePlayerState, subscribeAdventure, removeAdventureSubscription } from '../modules/adventure/adventureService'
+import type { AdventureDifficulty, AdventureGame, AdventureChallenge, AdventurePlayer, AdventureEvent, AdventureInventoryItem, AdventureEnemy } from '../modules/adventure/types'
 
 const route=useRoute()
 const role=ref<'teacher'|'player'>('player')
 const code=ref(''),nickname=ref(''),sessionId=ref(''),game=ref<AdventureGame|null>(null),playerId=ref('')
 const challenge=ref<AdventureChallenge|null>(null),roomIndex=ref(0),errors=ref(0),eliminated=ref(false),completed=ref(false)
-const players=ref<AdventurePlayer[]>([]),events=ref<AdventureEvent[]>([]),inventory=ref<AdventureInventoryItem[]>([])
+const players=ref<AdventurePlayer[]>([]),events=ref<AdventureEvent[]>([]),inventory=ref<AdventureInventoryItem[]>([]),enemies=ref<AdventureEnemy[]>([])
+const currentEnemy=computed(()=>enemies.value.find(e=>e.room_index===roomIndex.value&&e.status==='active')??null)
+const enemyHealthPercent=computed(()=>currentEnemy.value?Math.max(0,Math.min(100,(currentEnemy.value.health/currentEnemy.value.max_health)*100)):0)
 const selected=ref(''),busy=ref(false),message=ref(''),announcement=ref('')
 const teacherGift=ref('Poción de vida'),giftTarget=ref(''),eventText=ref(''),selectedRoom=ref(0)
 let channel:any=null,heartbeat:ReturnType<typeof setInterval>|undefined,refreshTimer:ReturnType<typeof setInterval>|undefined
@@ -18,9 +20,9 @@ const roomNames=['La puerta de las notas','El corredor de Sol mayor','La cámara
 function difficultyName(v:AdventureDifficulty){return ({beginner:'Principiante',intermediate:'Intermedio',advanced:'Avanzado',mixed:'Mixto'} as const)[v]}
 async function refresh(){
  if(!game.value)return
- try{players.value=await loadAdventurePlayers(game.value.id);events.value=await loadAdventureEvents(game.value.id);if(playerId.value)inventory.value=await loadAdventureInventory(playerId.value)
+ try{players.value=await loadAdventurePlayers(game.value.id);events.value=await loadAdventureEvents(game.value.id);enemies.value=await loadAdventureEnemies(game.value.id);if(playerId.value){inventory.value=await loadAdventureInventory(playerId.value);const state=await loadAdventurePlayerState(game.value.id);challenge.value=state.challenge;roomIndex.value=state.room_index;errors.value=state.errors;eliminated.value=state.eliminated;completed.value=Boolean(state.finished_at)}
  const {data}=await requireSupabase().from('adventure_games').select('id,code,title,status,difficulty,created_at').eq('id',game.value.id).single();if(data)game.value=data as AdventureGame
- const mine=players.value.find(p=>p.id===playerId.value);if(mine){roomIndex.value=mine.room_index;errors.value=mine.errors;eliminated.value=mine.eliminated;completed.value=Boolean(mine.finished_at)}
+ const mine=players.value.find(p=>p.id===playerId.value);if(mine&&!playerId.value){roomIndex.value=mine.room_index;errors.value=mine.errors;eliminated.value=mine.eliminated;completed.value=Boolean(mine.finished_at)}
  }catch(e){message.value=e instanceof Error?e.message:'No se pudo actualizar la partida.'}
 }
 function listen(){if(!game.value)return;if(channel)removeAdventureSubscription(channel);channel=subscribeAdventure(game.value.id,()=>void refresh());if(refreshTimer)clearInterval(refreshTimer);refreshTimer=setInterval(()=>void refresh(),12000)}
@@ -32,7 +34,7 @@ async function action(name:string,payload:Record<string,unknown>={}){if(!game.va
 async function summonEnemy(){await action('summon_enemy',{room_index:selectedRoom.value})}
 async function announce(){if(!eventText.value.trim())return;await action('announce',{message:eventText.value.trim()});eventText.value=''}
 async function giveGift(){if(!giftTarget.value)return;await action('gift',{player_id:giftTarget.value,item_key:'teacher_gift',label:teacherGift.value,description:'Regalo entregado por el maestro del juego'});giftTarget.value=''}
-async function logout(){if(channel)removeAdventureSubscription(channel);channel=null;if(heartbeat)clearInterval(heartbeat);if(refreshTimer)clearInterval(refreshTimer);game.value=null;playerId.value='';challenge.value=null;players.value=[];events.value=[];inventory.value=[];message.value='Has salido de la vista de partida.'}
+async function logout(){if(channel)removeAdventureSubscription(channel);channel=null;if(heartbeat)clearInterval(heartbeat);if(refreshTimer)clearInterval(refreshTimer);game.value=null;playerId.value='';challenge.value=null;players.value=[];events.value=[];inventory.value=[];enemies.value=[];message.value='Has salido de la vista de partida.'}
 onMounted(async()=>{if(!isSupabaseConfigured){message.value='Conecta Supabase para habilitar las partidas compartidas.';return}try{const gameId=String(route.query.gameId??'');sessionId.value=String(route.query.sessionId??'');if(route.query.role==='teacher'&&gameId){const {data,error}=await requireSupabase().from('adventure_games').select('id,code,title,status,difficulty,created_at').eq('id',gameId).single();if(error)throw error;game.value=data as AdventureGame;role.value='teacher';await refresh();listen();return}const incomingCode=String(route.query.code??'');const incomingNickname=String(route.query.nickname??'');if(incomingCode&&incomingNickname){code.value=incomingCode;nickname.value=incomingNickname;await joinGame();return}message.value='Esta actividad se abre desde el código habitual de una sesión de Guitar Tutor.'}catch(e){message.value=e instanceof Error?e.message:'No se pudo abrir la actividad.'}})
 onUnmounted(()=>{if(channel)removeAdventureSubscription(channel);if(heartbeat)clearInterval(heartbeat);if(refreshTimer)clearInterval(refreshTimer)})
 </script>
@@ -68,6 +70,11 @@ onUnmounted(()=>{if(channel)removeAdventureSubscription(channel);if(heartbeat)cl
        <p class="text-xs font-extrabold uppercase tracking-wide text-[#527563]">Comunicación</p><div class="mt-2 flex gap-2"><input v-model="eventText" class="min-w-0 flex-1 rounded-xl border border-[#dce6dd] px-3 py-2 text-sm" placeholder="Anuncio para el grupo"/><button class="secondary" :disabled="!eventText.trim()||busy" @click="announce">Anunciar</button></div>
       </div>
       <button class="mt-4 rounded-xl bg-[#8e3e36] px-4 py-2 text-sm font-bold text-white" :disabled="busy" @click="action('end_game')">Finalizar partida</button>
+     </div>
+     <div v-if="role==='player'&&currentEnemy" class="mt-5 rounded-2xl border border-[#d7b6a2] bg-[#fff7f1] p-4">
+      <div class="flex items-center justify-between gap-3"><div class="flex items-center gap-2"><Swords class="text-[#a34e35]" :size="20"/><div><p class="eyebrow text-[#a34e35]">Combate cooperativo · Sala {{currentEnemy.room_index+1}}</p><h4 class="font-black text-[#60392e]">{{currentEnemy.name}}</h4></div></div><span class="rounded-full bg-white px-3 py-1 text-sm font-black text-[#8c4936]">{{currentEnemy.health}} / {{currentEnemy.max_health}} HP</span></div>
+      <div class="mt-3 h-3 overflow-hidden rounded-full bg-[#ead8ce]"><div class="h-full rounded-full bg-[#b95c43] transition-all duration-500" :style="{width:enemyHealthPercent+'%'}"/></div>
+      <p class="mt-2 text-xs text-[#805e50]">La vida es compartida: cada respuesta correcta de cualquier compañero reduce esta barra. Si llega a cero, todo el grupo de esta sala avanza.</p>
      </div>
      <div v-else-if="game.status==='lobby'" class="py-8 text-center"><Clock3 class="mx-auto text-[#7c9185]" :size="34"/><h3 class="mt-3 font-bold">Esperando al maestro del juego</h3><p class="mt-1 text-sm text-[#718078]">Cuando comience la partida aparecerá tu primer desafío.</p></div>
      <div v-else-if="eliminated" class="py-8 text-center"><Skull class="mx-auto text-[#9b4f3c]" :size="40"/><h3 class="mt-3 text-xl font-black">Has quedado fuera de la expedición</h3><p class="mt-2 text-sm text-[#718078]">Puedes seguir observando el recorrido de tus compañeros. El docente puede concederte una nueva oportunidad.</p></div>
