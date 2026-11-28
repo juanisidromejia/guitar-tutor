@@ -7,8 +7,8 @@ import { joinAdventure, submitAdventureAnswer, attackAdventureEnemy, claimAdvent
 import type { AdventureDifficulty, AdventureGame, AdventureChallenge, AdventurePlayer, AdventureEvent, AdventureInventoryItem, AdventureEnemy } from '../modules/adventure/types'
 
 const route=useRoute()
-const currentDb=()=>role.value==='player'?getAdventureSupabase():requireSupabase()
 const role=ref<'teacher'|'player'>('player')
+const currentDb=()=>role.value==='player'?getAdventureSupabase():requireSupabase()
 const code=ref(''),nickname=ref(''),sessionId=ref(''),game=ref<AdventureGame|null>(null),playerId=ref('')
 const challenge=ref<AdventureChallenge|null>(null),roomIndex=ref(0),errors=ref(0),eliminated=ref(false),completed=ref(false)
 const players=ref<AdventurePlayer[]>([]),events=ref<AdventureEvent[]>([]),inventory=ref<AdventureInventoryItem[]>([]),enemies=ref<AdventureEnemy[]>([])
