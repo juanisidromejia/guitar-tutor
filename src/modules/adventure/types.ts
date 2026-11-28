@@ -1,8 +1,9 @@
 export type AdventureDifficulty = 'beginner' | 'intermediate' | 'advanced' | 'mixed'
 export type AdventureStatus = 'lobby' | 'active' | 'finished'
 export type AdventureRole = 'teacher' | 'player'
-export interface AdventureGame { id:string; code:string; title:string; status:AdventureStatus; difficulty:AdventureDifficulty; created_at:string }
-export interface AdventureChallenge { room_index:number; room_title:string; room_description:string; prompt:string; options:string[]; challenge_id:string; challenge_type?:'normal'|'enemy'|'trap'; }
+export interface AdventureRoomConfig { enemies:number; difficulty_offset:0|1; trap:boolean }
+export interface AdventureGame { id:string; code:string; title:string; status:AdventureStatus; difficulty:AdventureDifficulty; created_at:string; room_config?:AdventureRoomConfig[] }
+export interface AdventureChallenge { room_index:number; room_title:string; room_description:string; prompt:string; options:string[]; challenge_id:string; challenge_type?:'normal'|'enemy'|'trap'; room_type?:'puzzle'|'trap'|'treasure'; }
 export interface AdventurePlayer { id:string; nickname:string; room_index:number; errors:number; eliminated:boolean; finished_at:string|null; last_seen_at:string; }
 export interface AdventureEvent { id:string; event_type:string; message:string; created_at:string; }
 export interface AdventureInventoryItem { id:string; item_key:string; label:string; description:string; quantity:number; }
