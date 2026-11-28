@@ -17,6 +17,7 @@ declare
   v_candidate text;
   v_suffix integer := 1;
   v_suffix_text text;
+  v_is_new boolean;
 begin
   if auth.uid() is null then
     raise exception 'No se pudo identificar al aventurero.';
@@ -39,6 +40,7 @@ begin
   select * into v_player
   from public.adventure_players
   where game_id=v_game.id and user_id=auth.uid();
+  v_is_new:=not found;
 
   v_base:=trim(p_nickname);
   v_candidate:=left(v_base,24);
@@ -59,7 +61,7 @@ begin
     v_candidate:=left(v_base,24-char_length(v_suffix_text))||v_suffix_text;
   end loop;
 
-  if not found then
+  if v_is_new then
     select * into v_challenge
     from public.adventure_challenges
     where game_id=v_game.id and room_index=0
